@@ -38,4 +38,7 @@ public class ProjectEntity {
     private LocalDate startDate;
 
     private LocalDate endDate;
+
+    public ProjectEntity(String name, Long aLong, Long aLong1, String s, String comment, Set<String> strings, LocalDate localDate, LocalDate localDate1) {
+    }
 }
