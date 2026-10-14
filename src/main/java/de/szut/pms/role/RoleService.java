@@ -12,6 +12,8 @@ import java.util.List;
 public class RoleService {
 
     private final RoleRepository roleRepository;
+    private final RoleMapper roleMapper;
+
 
     public RoleDto create(String name) {
         if (roleRepository.existsByName(name)) {
@@ -24,13 +26,13 @@ public class RoleService {
                 new RoleEntity(name)
         );
 
-        return toDto(role);
+        return roleMapper.toDto(role);
     }
 
     public List<RoleDto> findAll() {
         return roleRepository.findAll()
                 .stream()
-                .map(this::toDto)
+                .map(roleMapper::toDto)
                 .toList();
     }
 
