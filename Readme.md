@@ -20,7 +20,7 @@ http://localhost:8080/swagger
 
 | Dienst | Wofür | Port |
 |---|---|---|
-| `postgres-pms` | eure eigene Datenbank | `5433` (extern) |
+| `postgres-pms` | eure eigene Datenbank | `15432` (extern) |
 | `postgres-employee` + `employee` | der bestehende Employee-Service | `5432` / `8089` |
 | `postgres-authentik` + `redis` + `authentik-server` + `authentik-worker` | der zentrale Identity-Provider | `9000` / `9443` |
 
