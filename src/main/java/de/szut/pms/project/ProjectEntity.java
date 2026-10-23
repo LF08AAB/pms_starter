@@ -55,6 +55,7 @@ public class ProjectEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
+<<<<<<< HEAD
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectEmployeeEntity> employees = new ArrayList<>();
 
@@ -70,3 +71,8 @@ public class ProjectEntity {
         employee.setProject(null);
     }
 }
+=======
+    public ProjectEntity(String name, Long aLong, Long aLong1, String s, String comment, Set<String> strings, LocalDate localDate, LocalDate localDate1) {
+    }
+}
+>>>>>>> feature-s01-t05
