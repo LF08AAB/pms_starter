@@ -1,12 +1,9 @@
 package de.szut.pms.project;
 
 
-import jakarta.persistence.ElementCollection;
+import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
-
+@Component
 public class ProjectMapper {
     public ProjectDto toDto(ProjectEntity entity) {
         return new ProjectDto(
