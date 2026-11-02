@@ -21,3 +21,43 @@ Authorization: Bearer {{bearer_token}}
 ### Einen Eintrag löschen
 DELETE http://localhost:8080/hello/1
 Authorization: Bearer {{bearer_token}}
+
+### Projekt anlegen (authentifiziert -> 201 Created)
+POST http://localhost:8080/project
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "name": "Neues Projekt",
+  "responsibleEmployeeId": 1,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Testprojekt",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
+
+### Projekt anlegen ohne Token (-> 401 Unauthorized, kein Projekt wird angelegt)
+POST http://localhost:8080/project
+Content-Type: application/json
+
+{
+  "name": "Projekt ohne Auth",
+  "responsibleEmployeeId": 1,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Darf nicht angelegt werden",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
+
+### Projekt anlegen mit ungültigem Token (-> 401 Unauthorized)
+POST http://localhost:8080/project
+Content-Type: application/json
+Authorization: Bearer ungueltiger.token
+
+{
+  "name": "Projekt mit falschem Token"
+}
