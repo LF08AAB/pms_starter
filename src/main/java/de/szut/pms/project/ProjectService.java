@@ -20,4 +20,12 @@ public class ProjectService {
         ProjectEntity saved = repository.save(mapper.toEntity(dto));
         return mapper.toDto(saved);
     }
+
+    @Transactional
+    public ProjectDto update(Long id, PutProjectDto dto) {
+        ProjectEntity entity = repository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+        mapper.updateEntity(entity, dto);
+        return mapper.toDto(repository.save(entity));
+    }
 }

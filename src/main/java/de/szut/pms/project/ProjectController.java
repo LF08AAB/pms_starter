@@ -2,7 +2,9 @@ package de.szut.pms.project;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +30,13 @@ public class ProjectController {
                 .toUri();
 
         return ResponseEntity.created(location).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProjectDto> update(@PathVariable Long id, @RequestBody @Valid PutProjectDto dto) {
+        ProjectDto updated = service.update(id, dto);
+
+        return ResponseEntity.ok(updated);
     }
 
 }
