@@ -14,7 +14,7 @@ public class ProjectMapper {
         entity.getContactPerson(),
         entity.getComment(),
         // klären, ob benötigte Qualifikationen als Namen oder Skill-IDs gespeichert werden sollen
-        entity.getRequiredQualifications(),
+        new java.util.HashSet<>(entity.getRequiredQualifications()),
         entity.getStartDate(),
         entity.getEndDate());
     }

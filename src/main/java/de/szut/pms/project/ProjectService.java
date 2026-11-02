@@ -23,6 +23,7 @@ public class ProjectService {
         return mapper.toDto(saved);
     }
 
+    @Transactional(readOnly = true)
     public List<ProjectDto> findAll() {
         return repository.findAll()
                 .stream()
