@@ -38,4 +38,13 @@ public class ProjectService {
         return projects.stream()
                 .map(mapper::toDto)
                 .toList();
-    }}
+    }
+
+    @Transactional
+    public void deleteProject(Long id) {
+        ProjectEntity project = repository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+
+        repository.delete(project);
+    }
+}
