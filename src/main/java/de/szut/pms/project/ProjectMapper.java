@@ -2,6 +2,7 @@ package de.szut.pms.project;
 
 
 import org.springframework.stereotype.Component;
+import java.util.HashSet;
 
 @Component
 public class ProjectMapper {
@@ -14,7 +15,7 @@ public class ProjectMapper {
         entity.getContactPerson(),
         entity.getComment(),
         // klären, ob benötigte Qualifikationen als Namen oder Skill-IDs gespeichert werden sollen
-        entity.getRequiredQualifications(),
+        new HashSet<>(entity.getRequiredQualifications()),
         entity.getStartDate(),
         entity.getEndDate());
     }
