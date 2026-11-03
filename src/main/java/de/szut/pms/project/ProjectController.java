@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.net.URI;
 
@@ -28,6 +30,11 @@ public class ProjectController {
                 .toUri();
 
         return ResponseEntity.created(location).body(created);
+    }
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ProjectDto> getById(@PathVariable Long projectId) {
+        ProjectDto project = service.getById(projectId);
+        return ResponseEntity.ok(project);
     }
 
 }

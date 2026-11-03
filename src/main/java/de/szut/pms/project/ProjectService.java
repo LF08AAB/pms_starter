@@ -20,4 +20,12 @@ public class ProjectService {
         ProjectEntity saved = repository.save(mapper.toEntity(dto));
         return mapper.toDto(saved);
     }
+
+    @Transactional(readOnly = true)
+    public ProjectDto getById(Long projectId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        return mapper.toDto(project);
+    }
 }
