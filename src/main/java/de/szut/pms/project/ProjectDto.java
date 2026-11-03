@@ -1,6 +1,7 @@
 package de.szut.pms.project;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 public record ProjectDto (
@@ -13,6 +14,7 @@ public record ProjectDto (
         // klären, ob benötigte Qualifikationen als Namen oder Skill-IDs gespeichert werden sollen
         Set<String> requiredQualifications,
         LocalDate startDate,
-        LocalDate endDate
+        LocalDate endDate,
+        List<ProjectEmployeeDto> employees
 ){
 }

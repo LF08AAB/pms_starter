@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -37,6 +39,25 @@ public class ProjectEntity {
 
     private LocalDate endDate;
 
-    public ProjectEntity(String name, Long aLong, Long aLong1, String s, String comment, Set<String> strings, LocalDate localDate, LocalDate localDate1) {
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProjectEmployeeEntity> employees = new ArrayList<>();
+
+    public ProjectEntity(
+            String name,
+            Long responsibleEmployeeId,
+            Long customerId,
+            String contactPerson,
+            String comment,
+            Set<String> requiredQualifications,
+            LocalDate startDate,
+            LocalDate endDate) {
+        this.name = name;
+        this.responsibleEmployeeId = responsibleEmployeeId;
+        this.customerId = customerId;
+        this.contactPerson = contactPerson;
+        this.comment = comment;
+        this.requiredQualifications = new HashSet<>(requiredQualifications);
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 }
