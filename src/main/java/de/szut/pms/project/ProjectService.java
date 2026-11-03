@@ -30,4 +30,13 @@ public class ProjectService {
         return projects.stream()
                 .map(mapper::toDto)
                 .toList();
-    }}
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectDto getById(Long projectId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        return mapper.toDto(project);
+    }
+}
