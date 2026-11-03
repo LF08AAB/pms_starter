@@ -50,7 +50,8 @@ public class AuthentikSecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/hello").authenticated()
                         .requestMatchers("/hello/**").authenticated()
-                        .requestMatchers("/project").authenticated()                        .anyRequest().permitAll()
+                        .requestMatchers(HttpMethod.GET, "/project").authenticated()
+                        .anyRequest().permitAll()
                 );
 
         return http.build();
