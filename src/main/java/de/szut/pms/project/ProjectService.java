@@ -37,7 +37,7 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public ProjectDto getById(Long projectId) {
-        ProjectEntity project = repository.findById(projectId)
+        ProjectEntity project = repository.findProjectWithEmployeesByProjectId(projectId)
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
         return mapper.toDto(project);
     }
