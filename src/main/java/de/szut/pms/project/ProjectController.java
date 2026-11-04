@@ -97,6 +97,16 @@ public class ProjectController {
         return ResponseEntity.ok(service.getEmployeeProjects(employeeId));
     }
 
+    @Operation(
+            summary = "Mitarbeiter eines Projekts abrufen",
+            description = "Gibt die Mitarbeiterzuordnungen und den Abdeckungsstatus benoetigter Projektqualifikationen zurueck."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Projektmitarbeiter und Qualifikationsabdeckung"),
+            @ApiResponse(responseCode = "401", description = "Authentifizierung fehlt"),
+            @ApiResponse(responseCode = "404", description = "Projekt oder zugeordneter Mitarbeiter nicht gefunden"),
+            @ApiResponse(responseCode = "503", description = "Employee-Service ist nicht verfuegbar")
+    })
     @GetMapping("/{projectId}/employees")
     public ResponseEntity<ProjectEmployeesDto> getProjectEmployees(@PathVariable Long projectId) {
         return ResponseEntity.ok(service.getProjectEmployees(projectId));
