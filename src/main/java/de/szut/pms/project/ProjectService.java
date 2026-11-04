@@ -28,6 +28,13 @@ public class ProjectService {
         return mapper.toDto(saved);
     }
 
+    @Transactional(readOnly = true)
+    public ProjectDto getById(Long projectId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        return mapper.toDto(project);
+    }
+
     @Transactional
     public ProjectDto update(Long id, PutProjectDto dto) {
         ProjectEntity entity = repository.findById(id)
@@ -50,7 +57,6 @@ public class ProjectService {
     public void deleteProject(Long id) {
         ProjectEntity project = repository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
-
         repository.delete(project);
     }
 

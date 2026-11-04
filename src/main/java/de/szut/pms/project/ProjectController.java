@@ -49,11 +49,17 @@ public class ProjectController {
     }
 
 
-    @Operation(
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ProjectDto> getById(@PathVariable Long projectId) {
+        ProjectDto project = service.getById(projectId);
+        return ResponseEntity.ok(project);
+    }
+
+  @Operation(
             summary = "Projekt aktualisieren",
             description = "Aktualisiert ein bestehendes Projekt anhand seiner Projekt-ID."
     )
-
+  
     @PutMapping("/{id}")
     public ResponseEntity<ProjectDto> update(@PathVariable Long id, @RequestBody @Valid PutProjectDto dto) {
         ProjectDto updated = service.update(id, dto);
