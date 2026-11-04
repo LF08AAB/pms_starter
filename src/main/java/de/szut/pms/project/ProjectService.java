@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 
 @Service
@@ -109,13 +110,21 @@ public class ProjectService {
     public ProjectEmployeesDto getProjectEmployees(Long projectId) {
         ProjectEntity project = repository.findProjectWithEmployeesByProjectId(projectId)
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        List<Set<String>> employeeQualifications = project.getEmployees().stream()
+                .map(assignment -> employeeClient.findById(assignment.getEmployeeId())
+                        .orElseThrow(() -> new EmployeeNotFoundException(assignment.getEmployeeId()))
+                        .qualifications())
+                .toList();
         List<ProjectEmployeeDto> employees = project.getEmployees().stream()
                 .map(assignment -> new ProjectEmployeeDto(
                         assignment.getEmployeeId(), assignment.getQualification()))
                 .toList();
         List<ProjectQualificationDto> requiredQualifications = project.getRequiredQualifications().stream()
                 .sorted()
-                .map(qualification -> new ProjectQualificationDto(qualification, false))
+                .map(qualification -> new ProjectQualificationDto(
+                        qualification,
+                        employeeQualifications.stream().anyMatch(qualifications ->
+                                qualifications.contains(qualification))))
                 .toList();
 
         return new ProjectEmployeesDto(
