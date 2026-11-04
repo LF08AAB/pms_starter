@@ -52,7 +52,7 @@ public class ProjectController {
             @PathVariable Long projectId,
             @PathVariable Long employeeId,
             @RequestBody AssignEmployeeDto dto) {
-        service.validateEmployeeAssignment(projectId, employeeId, dto.qualification());
+        service.assignEmployee(projectId, employeeId, dto.qualification());
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 }

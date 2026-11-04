@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -32,6 +34,10 @@ public class ProjectEntity {
     // klären, ob benötigte Qualifikationen als Namen oder Skill-IDs gespeichert werden sollen
     @ElementCollection
     private Set<String> requiredQualifications = new HashSet<>();
+
+    @ElementCollection
+    @CollectionTable(name = "project_employees", joinColumns = @JoinColumn(name = "project_id"))
+    private List<AssignedEmployee> employees = new ArrayList<>();
 
     private LocalDate startDate;
 

@@ -46,9 +46,9 @@ public class ProjectService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public void validateEmployeeAssignment(Long projectId, Long employeeId, String qualification) {
-        repository.findById(projectId)
+    @Transactional
+    public ProjectDto assignEmployee(Long projectId, Long employeeId, String qualification) {
+        ProjectEntity project = repository.findById(projectId)
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
 
         EmployeeDetails employee = employeeClient.findById(employeeId)
@@ -56,5 +56,13 @@ public class ProjectService {
         if (!employee.qualifications().contains(qualification)) {
             throw new EmployeeQualificationNotFoundException(employeeId, qualification);
         }
+
+        if (project.getEmployees().stream()
+                .anyMatch(assigned -> assigned.getEmployeeId().equals(employeeId))) {
+            throw new EmployeeAlreadyAssignedException(projectId, employeeId);
+        }
+
+        project.getEmployees().add(new AssignedEmployee(employeeId, qualification));
+        return mapper.toDto(repository.save(project));
     }
 }
