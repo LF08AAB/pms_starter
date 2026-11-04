@@ -55,11 +55,11 @@ public class ProjectController {
         return ResponseEntity.ok(project);
     }
 
-  @Operation(
+    @Operation(
             summary = "Projekt aktualisieren",
             description = "Aktualisiert ein bestehendes Projekt anhand seiner Projekt-ID."
     )
-  
+
     @PutMapping("/{id}")
     public ResponseEntity<ProjectDto> update(@PathVariable Long id, @RequestBody @Valid PutProjectDto dto) {
         ProjectDto updated = service.update(id, dto);
@@ -99,6 +99,7 @@ public class ProjectController {
             @PathVariable Long projectId,
             @PathVariable Long employeeId,
             @RequestBody AssignEmployeeDto dto) {
+        service.validateEmployeeAssignment(projectId, employeeId, dto.qualification());
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
