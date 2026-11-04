@@ -6,6 +6,16 @@ import java.util.HashSet;
 
 @Component
 public class ProjectMapper {
+    public EmployeeProjectDto toEmployeeProjectDto(ProjectEmployeeEntity assignment) {
+        ProjectEntity project = assignment.getProject();
+        return new EmployeeProjectDto(
+                project.getProjectId(),
+                project.getName(),
+                project.getStartDate(),
+                project.getEndDate(),
+                assignment.getQualification());
+    }
+
     public ProjectDto toDto(ProjectEntity entity) {
         return new ProjectDto(
         entity.getProjectId(),

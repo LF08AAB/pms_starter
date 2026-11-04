@@ -84,7 +84,7 @@ public class ProjectController {
             description = "Gibt die Projekte zur angegebenen Mitarbeiter-ID als JSON zurueck."
     )
     @GetMapping("/employees/{employeeId}")
-    public ResponseEntity<List<ProjectDto>> getEmployeeProjects(@PathVariable Long employeeId) {
+    public ResponseEntity<EmployeeProjectsDto> getEmployeeProjects(@PathVariable Long employeeId) {
         return ResponseEntity.ok(service.getEmployeeProjects(employeeId));
     }
 

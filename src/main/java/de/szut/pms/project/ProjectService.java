@@ -80,6 +80,16 @@ public class ProjectService {
         repository.delete(project);
     }
 
+    @Transactional(readOnly = true)
+    public EmployeeProjectsDto getEmployeeProjects(Long employeeId) {
+        List<EmployeeProjectDto> projects = repository.findProjectsByEmployeeId(employeeId).stream()
+                .flatMap(project -> project.getEmployees().stream())
+                .filter(assignment -> employeeId.equals(assignment.getEmployeeId()))
+                .map(mapper::toEmployeeProjectDto)
+                .toList();
+        return new EmployeeProjectsDto(employeeId, projects);
+    }
+
     @Transactional
     public ProjectDto removeEmployee(Long projectId, Long employeeId) {
         ProjectEntity project = repository.findById(projectId)
@@ -91,14 +101,6 @@ public class ProjectService {
         }
         ProjectEntity updatedProject = repository.saveAndFlush(project);
         return mapper.toDto(updatedProject);
-    }
-    @Transactional(readOnly = true)
-    public List<ProjectDto> getEmployeeProjects(Long employeeId) {
-        return repository.findAll().stream()
-                .filter(project -> project.getEmployees().stream()
-                        .anyMatch(employee -> employeeId.equals(employee.getEmployeeId())))
-                .map(mapper::toDto)
-                .toList();
     }
 
     private void verifyEmployee(Long employeeId) {
