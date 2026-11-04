@@ -69,6 +69,10 @@ POST http://localhost:8080/project/1/employees/2
   "qualification": "Java"
 }
 
+### Projekte eines Mitarbeiters abrufen (authentifiziert)
+GET http://localhost:8080/project/employees/2
+Authorization: Bearer {{bearer_token}}
+
 ### Projekt anlegen mit nicht existierender Mitarbeiter-ID (-> 404 Not Found, kein Projekt wird angelegt)
 POST http://localhost:8080/project
 Content-Type: application/json
@@ -110,6 +114,21 @@ Authorization: ******
   "responsibleEmployeeId": 1,
   "contactPerson": "Max Mustermann",
   "comment": "Kunden-ID ist ungültig",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
+
+### Projekt anlegen ohne Kunden-ID (-> 400 Bad Request, kein Projekt wird angelegt)
+POST http://localhost:8080/project
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "name": "Projekt ohne Kunden-ID",
+  "responsibleEmployeeId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Kunden-ID fehlt",
   "requiredQualifications": ["Java"],
   "startDate": "2026-11-01",
   "endDate": "2027-03-31"

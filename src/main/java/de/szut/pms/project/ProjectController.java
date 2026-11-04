@@ -54,11 +54,11 @@ public class ProjectController {
         return ResponseEntity.ok(project);
     }
 
-  @Operation(
+    @Operation(
             summary = "Projekt aktualisieren",
             description = "Aktualisiert ein bestehendes Projekt anhand seiner Projekt-ID."
     )
-  
+
     @PutMapping("/{id}")
     public ResponseEntity<ProjectDto> update(@PathVariable Long id, @RequestBody @Valid PutProjectDto dto) {
         ProjectDto updated = service.update(id, dto);
@@ -78,6 +78,14 @@ public class ProjectController {
         return ResponseEntity.ok(projects);
     }
 
+    @Operation(
+            summary = "Projekte eines Mitarbeiters abrufen",
+            description = "Gibt die Projekte zur angegebenen Mitarbeiter-ID als JSON zurueck."
+    )
+    @GetMapping("/employees/{employeeId}")
+    public ResponseEntity<List<ProjectDto>> getEmployeeProjects(@PathVariable Long employeeId) {
+        return ResponseEntity.ok(service.getEmployeeProjects(employeeId));
+    }
 
     @Operation(
             summary = "Mitarbeiter einem Projekt zuordnen",
