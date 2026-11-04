@@ -69,7 +69,8 @@ public class ProjectService {
         if (!removed) {
             throw new ProjectEmployeeAssignmentNotFoundException(projectId, employeeId);
         }
-        return mapper.toDto(project);
+        ProjectEntity updatedProject = repository.saveAndFlush(project);
+        return mapper.toDto(updatedProject);
     }
 
     private void verifyEmployee(Long employeeId) {
