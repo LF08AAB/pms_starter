@@ -36,5 +36,20 @@ public class ProjectMapper {
                 // klären, ob benötigte Qualifikationen als Namen oder Skill-IDs gespeichert werden sollen
                 dto.requiredQualifications(),
                 dto.startDate(),
-                dto.endDate());    }
+                dto.endDate());
+    }
+
+    public void updateEntity(ProjectEntity entity, PutProjectDto dto) {
+        entity.setName(dto.name());
+        entity.setResponsibleEmployeeId(dto.responsibleEmployeeId());
+        entity.setCustomerId(dto.customerId());
+        entity.setContactPerson(dto.contactPerson());
+        entity.setComment(dto.comment());
+        entity.getRequiredQualifications().clear();
+        if (dto.requiredQualifications() != null) {
+            entity.getRequiredQualifications().addAll(dto.requiredQualifications());
+        }
+        entity.setStartDate(dto.startDate());
+        entity.setEndDate(dto.endDate());
+    }
 }

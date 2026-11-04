@@ -56,7 +56,9 @@ public class ProjectEntity {
         this.customerId = customerId;
         this.contactPerson = contactPerson;
         this.comment = comment;
-        this.requiredQualifications = new HashSet<>(requiredQualifications);
+        this.requiredQualifications = requiredQualifications == null
+                ? new HashSet<>()
+                : new HashSet<>(requiredQualifications);
         this.startDate = startDate;
         this.endDate = endDate;
     }
