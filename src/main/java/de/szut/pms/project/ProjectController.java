@@ -1,7 +1,6 @@
 package de.szut.pms.project;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,8 +50,11 @@ public class ProjectController {
     public ResponseEntity<Void> assignEmployee(
             @PathVariable Long projectId,
             @PathVariable Long employeeId,
-            @RequestBody AssignEmployeeDto dto) {
+            @RequestBody @Valid AssignEmployeeDto dto) {
         service.assignEmployee(projectId, employeeId, dto.qualification());
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .build()
+                .toUri();
+        return ResponseEntity.created(location).build();
     }
 }

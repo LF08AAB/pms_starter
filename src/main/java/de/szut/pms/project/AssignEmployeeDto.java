@@ -1,4 +1,6 @@
 package de.szut.pms.project;
 
-public record AssignEmployeeDto(String qualification) {
+import jakarta.validation.constraints.NotBlank;
+
+public record AssignEmployeeDto(@NotBlank String qualification) {
 }
