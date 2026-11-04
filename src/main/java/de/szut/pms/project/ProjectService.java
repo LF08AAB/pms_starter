@@ -68,10 +68,13 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjectDto> getEmployeeProjects(Long employeeId) {
-        return repository.findProjectsByEmployeeId(employeeId).stream()
-                .map(mapper::toDto)
+    public EmployeeProjectsDto getEmployeeProjects(Long employeeId) {
+        List<EmployeeProjectDto> projects = repository.findProjectsByEmployeeId(employeeId).stream()
+                .flatMap(project -> project.getEmployees().stream())
+                .filter(assignment -> employeeId.equals(assignment.getEmployeeId()))
+                .map(mapper::toEmployeeProjectDto)
                 .toList();
+        return new EmployeeProjectsDto(employeeId, projects);
     }
 
     private void verifyEmployee(Long employeeId) {
