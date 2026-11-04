@@ -137,7 +137,10 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
     void removeEmployee_returnsNotFound_whenProjectDoesNotExist() throws Exception {
         mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}", Long.MAX_VALUE, 42L))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Nicht gefunden"))
+                .andExpect(jsonPath("$.detail").value(
+                        "Es gibt kein Projekt mit der Kennung " + Long.MAX_VALUE + "."));
     }
 
     @Test
@@ -204,6 +207,25 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isUnauthorized());
 
         assertTrue(projectEmployeeRepository.existsByProject_ProjectIdAndEmployeeId(projectId, 42L));
+    }
+
+    @Test
+    @WithMockUser
+    void removeEmployee_returnsNotFound_whenRequestIsRepeated() throws Exception {
+        ProjectEntity project = createTestProject("Projekt für wiederholtes Entfernen", 1L, 2L);
+        ProjectEmployeeEntity assignment = new ProjectEmployeeEntity(42L, "Java");
+        assignment.setProject(project);
+        project.getEmployees().add(assignment);
+        project = projectRepository.saveAndFlush(project);
+
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}",
+                        project.getProjectId(), 42L))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}",
+                        project.getProjectId(), 42L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Mitarbeiter nicht zugeordnet"));
     }
 
     // T_04: Kein JWT / keine Authentifizierung
