@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.List;
 import java.net.URI;
@@ -53,5 +54,11 @@ public class ProjectController {
             @PathVariable Long employeeId,
             @RequestBody AssignEmployeeDto dto) {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
+        service.deleteProject(id);
+        return ResponseEntity.noContent().build();
     }
 }
