@@ -1,7 +1,6 @@
 package de.szut.pms.project;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -101,16 +100,19 @@ public class ProjectController {
 
     @Operation(
             summary = "Mitarbeiter einem Projekt zuordnen",
-            description = "Platzhalter für die Mitarbeiterzuordnung. Der Endpunkt ist noch nicht implementiert und antwortet mit HTTP 501."
+            description = "Ordnet einen Mitarbeiter einem Projekt zu und antwortet mit HTTP 201 und der URI der Zuordnung."
     )
 
     @PostMapping("/{projectId}/employees/{employeeId}")
-    public ResponseEntity<Void> assignEmployee(
+    public ResponseEntity<ProjectDto> assignEmployee(
             @PathVariable Long projectId,
             @PathVariable Long employeeId,
-            @RequestBody AssignEmployeeDto dto) {
-        service.validateEmployeeAssignment(projectId, employeeId, dto.qualification());
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+            @RequestBody @Valid AssignEmployeeDto dto) {
+        ProjectDto updated = service.assignEmployee(projectId, employeeId, dto.qualification());
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .build()
+                .toUri();
+        return ResponseEntity.created(location).body(updated);
     }
 
     @Operation(
