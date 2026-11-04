@@ -7,10 +7,12 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import de.szut.pms.customer.CustomerNotFoundException;
 import de.szut.pms.employee.EmployeeNotFoundException;
 import de.szut.pms.employee.EmployeeServiceUnauthorizedException;
 import de.szut.pms.employee.EmployeeServiceUnavailableException;
@@ -81,6 +83,14 @@ public class ApiExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public ProblemDetail handleCustomerNotFound(CustomerNotFoundException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Kunde nicht gefunden");
+        return problem;
+    }
+
     @ExceptionHandler(EmployeeServiceUnauthorizedException.class)
     public ProblemDetail handleEmployeeServiceUnauthorized(
             EmployeeServiceUnauthorizedException ex) {
@@ -108,6 +118,15 @@ public class ApiExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Die Anfrage enthält ungültige Felder.");
         problem.setTitle("Ungültige Eingabe");
         problem.setProperty("errors", errors);
+        return problem;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleUnreadable(HttpMessageNotReadableException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Die Anfrage ist nicht lesbar oder enthält ungültige Werte (z. B. ein ungültiges Datum im Format yyyy-MM-dd).");
+        problem.setTitle("Ungültige Eingabe");
         return problem;
     }
 }

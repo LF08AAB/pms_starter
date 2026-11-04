@@ -15,6 +15,6 @@ public record ProjectDto (
         Set<String> requiredQualifications,
         LocalDate startDate,
         LocalDate endDate,
-        List<AssignedEmployeeDto> employees
+        List<ProjectEmployeeDto> employees
 ){
 }
