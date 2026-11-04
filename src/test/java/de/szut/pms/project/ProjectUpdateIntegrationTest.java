@@ -1,6 +1,8 @@
 package de.szut.pms.project;
 
+import de.szut.pms.employee.EmployeeClient;
 import de.szut.pms.testcontainers.AbstractIntegrationTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +16,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ProjectUpdateIntegrationTest extends AbstractIntegrationTest {
 
     private static final String BODY = """
-            {"name": "Neuer Name", "comment": "Neuer Kommentar", "contactPerson": "Erika Muster",
+            {"name": "Neuer Name", "responsibleEmployeeId": 1, "customerId": 2,
+             "comment": "Neuer Kommentar", "contactPerson": "Erika Muster",
              "requiredQualifications": ["Java"], "startDate": "2026-01-01", "endDate": "2026-12-31"}
             """;
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @MockitoBean
+    private EmployeeClient employeeClient;
 
     @BeforeEach
     void cleanProjects() {
