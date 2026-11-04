@@ -18,6 +18,7 @@ import de.szut.pms.employee.EmployeeServiceUnauthorizedException;
 import de.szut.pms.employee.EmployeeServiceUnavailableException;
 import de.szut.pms.hello.HelloNotFoundException;
 import de.szut.pms.project.EmployeeAlreadyAssignedException;
+import de.szut.pms.project.EmployeeAssignmentConflictException;
 import de.szut.pms.project.EmployeeQualificationNotFoundException;
 import de.szut.pms.project.ProjectEmployeeAssignmentNotFoundException;
 import de.szut.pms.project.ProjectNotFoundException;
@@ -84,6 +85,14 @@ public class ApiExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(EmployeeAssignmentConflictException.class)
+    public ProblemDetail handleAssignmentConflict(EmployeeAssignmentConflictException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Zeitliche Überschneidung");
+        return problem;
+    }
+
     @ExceptionHandler(CustomerNotFoundException.class)
     public ProblemDetail handleCustomerNotFound(CustomerNotFoundException ex) {
         ProblemDetail problem =
@@ -93,7 +102,8 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(EmployeeServiceUnauthorizedException.class)
-    public ProblemDetail handleEmployeeServiceUnauthorized(EmployeeServiceUnauthorizedException ex) {
+    public ProblemDetail handleEmployeeServiceUnauthorized(
+            EmployeeServiceUnauthorizedException ex) {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
         problem.setTitle("Nicht autorisiert");

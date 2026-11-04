@@ -76,6 +76,11 @@ public class ProjectService {
             throw new EmployeeAlreadyAssignedException(projectId, employeeId);
         }
 
+        if (repository.existsOverlappingAssignment(
+                projectId, employeeId, project.getStartDate(), project.getEndDate())) {
+            throw new EmployeeAssignmentConflictException(employeeId, projectId);
+        }
+
         ProjectEmployeeEntity assignment = new ProjectEmployeeEntity(employeeId, qualification);
         assignment.setProject(project);
         project.getEmployees().add(assignment);
