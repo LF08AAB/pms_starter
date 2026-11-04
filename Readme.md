@@ -96,6 +96,9 @@ Projektleiter aus den gespeicherten Projektdaten, wie bei den bestehenden
 Projektantworten. Es ist kein weiterer Employee-Service-Aufruf pro Projekt
 erforderlich. Die Projektleitung allein ersetzt keine Mitarbeiterzuordnung.
 
+Ohne zugeordnete Projekte antwortet der Endpunkt mit HTTP 200 und
+`{"employeeId": 2, "projects": []}`, nicht mit HTTP 404.
+
 # Kunden-Service
 
 Der Kunden-Service existiert noch nicht — er wird parallel von einem anderen Team gebaut. Das
