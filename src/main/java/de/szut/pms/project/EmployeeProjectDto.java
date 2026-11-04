@@ -7,6 +7,7 @@ public record EmployeeProjectDto(
         String name,
         LocalDate startDate,
         LocalDate endDate,
-        String qualification
+        String qualification,
+        Long responsibleEmployeeId
 ) {
 }
