@@ -15,6 +15,7 @@ import de.szut.pms.employee.EmployeeNotFoundException;
 import de.szut.pms.employee.EmployeeServiceUnauthorizedException;
 import de.szut.pms.employee.EmployeeServiceUnavailableException;
 import de.szut.pms.hello.HelloNotFoundException;
+import de.szut.pms.project.ProjectEmployeeAssignmentNotFoundException;
 import de.szut.pms.project.ProjectNotFoundException;
 
 /**
@@ -42,6 +43,15 @@ public class ApiExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Nicht gefunden");
+        return problem;
+    }
+
+    @ExceptionHandler(ProjectEmployeeAssignmentNotFoundException.class)
+    public ProblemDetail handleProjectEmployeeAssignmentNotFound(
+            ProjectEmployeeAssignmentNotFoundException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Mitarbeiter nicht zugeordnet");
         return problem;
     }
 
