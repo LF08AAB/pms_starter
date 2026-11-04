@@ -47,14 +47,14 @@ public class ProjectController {
     }
 
     @PostMapping("/{projectId}/employees/{employeeId}")
-    public ResponseEntity<Void> assignEmployee(
+    public ResponseEntity<ProjectDto> assignEmployee(
             @PathVariable Long projectId,
             @PathVariable Long employeeId,
             @RequestBody @Valid AssignEmployeeDto dto) {
-        service.assignEmployee(projectId, employeeId, dto.qualification());
+        ProjectDto updated = service.assignEmployee(projectId, employeeId, dto.qualification());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .build()
                 .toUri();
-        return ResponseEntity.created(location).build();
+        return ResponseEntity.created(location).body(updated);
     }
 }
