@@ -105,6 +105,23 @@ public class ProjectService {
         return new EmployeeProjectsDto(employeeId, projects);
     }
 
+    @Transactional(readOnly = true)
+    public ProjectEmployeesDto getProjectEmployees(Long projectId) {
+        ProjectEntity project = repository.findProjectWithEmployeesByProjectId(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        List<ProjectEmployeeDto> employees = project.getEmployees().stream()
+                .map(assignment -> new ProjectEmployeeDto(
+                        assignment.getEmployeeId(), assignment.getQualification()))
+                .toList();
+        List<ProjectQualificationDto> requiredQualifications = project.getRequiredQualifications().stream()
+                .sorted()
+                .map(qualification -> new ProjectQualificationDto(qualification, false))
+                .toList();
+
+        return new ProjectEmployeesDto(
+                project.getProjectId(), project.getName(), employees, requiredQualifications);
+    }
+
     @Transactional
     public ProjectDto removeEmployee(Long projectId, Long employeeId) {
         ProjectEntity project = repository.findById(projectId)

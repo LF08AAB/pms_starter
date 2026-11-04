@@ -98,8 +98,8 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}/employees")
-    public ResponseEntity<ProjectDto> getProjectEmployees(@PathVariable Long projectId) {
-        return ResponseEntity.ok(service.getById(projectId));
+    public ResponseEntity<ProjectEmployeesDto> getProjectEmployees(@PathVariable Long projectId) {
+        return ResponseEntity.ok(service.getProjectEmployees(projectId));
     }
 
     @Operation(
