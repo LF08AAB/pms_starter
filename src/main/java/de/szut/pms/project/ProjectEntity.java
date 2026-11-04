@@ -35,10 +35,6 @@ public class ProjectEntity {
     @ElementCollection
     private Set<String> requiredQualifications = new HashSet<>();
 
-    @ElementCollection
-    @CollectionTable(name = "project_employees", joinColumns = @JoinColumn(name = "project_id"))
-    private List<AssignedEmployee> employees = new ArrayList<>();
-
     private LocalDate startDate;
 
     private LocalDate endDate;

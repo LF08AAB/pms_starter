@@ -70,7 +70,9 @@ public class ProjectService {
             throw new EmployeeAlreadyAssignedException(projectId, employeeId);
         }
 
-        project.getEmployees().add(new AssignedEmployee(employeeId, qualification));
+        ProjectEmployeeEntity assignment = new ProjectEmployeeEntity(employeeId, qualification);
+        assignment.setProject(project);
+        project.getEmployees().add(assignment);
         return mapper.toDto(repository.save(project));
     }
 
