@@ -69,6 +69,7 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public EmployeeProjectsDto getEmployeeProjects(Long employeeId) {
+        employeeClient.verifyExists(employeeId);
         List<EmployeeProjectDto> projects = repository.findProjectsByEmployeeId(employeeId).stream()
                 .flatMap(project -> project.getEmployees().stream())
                 .filter(assignment -> employeeId.equals(assignment.getEmployeeId()))
