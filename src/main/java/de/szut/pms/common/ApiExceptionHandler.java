@@ -11,9 +11,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import de.szut.pms.hello.HelloNotFoundException;
 import de.szut.pms.employee.EmployeeNotFoundException;
+import de.szut.pms.employee.EmployeeServiceUnauthorizedException;
 import de.szut.pms.employee.EmployeeServiceUnavailableException;
+import de.szut.pms.hello.HelloNotFoundException;
 import de.szut.pms.project.EmployeeAlreadyAssignedException;
 import de.szut.pms.project.EmployeeQualificationNotFoundException;
 import de.szut.pms.project.ProjectNotFoundException;
@@ -50,7 +51,7 @@ public class ApiExceptionHandler {
     public ProblemDetail handleEmployeeNotFound(EmployeeNotFoundException ex) {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-        problem.setTitle("Nicht gefunden");
+        problem.setTitle("Mitarbeiter nicht gefunden");
         return problem;
     }
 
@@ -68,6 +69,14 @@ public class ApiExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Zuordnung bereits vorhanden");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeServiceUnauthorizedException.class)
+    public ProblemDetail handleEmployeeServiceUnauthorized(EmployeeServiceUnauthorizedException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problem.setTitle("Nicht autorisiert");
         return problem;
     }
 
