@@ -70,4 +70,12 @@ public class ProjectService {
         project.getEmployees().add(new AssignedEmployee(employeeId, qualification));
         return mapper.toDto(repository.save(project));
     }
+
+    @Transactional
+    public void deleteProject(Long id) {
+        ProjectEntity project = repository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+        repository.delete(project);
+        repository.delete(project);
+    }
 }
