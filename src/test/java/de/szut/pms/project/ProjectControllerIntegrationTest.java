@@ -152,6 +152,7 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.contactPerson").value("Erika Mustermann"))
                 .andExpect(jsonPath("$.employees").isArray())
                 .andExpect(jsonPath("$.employees").isEmpty());
+                .andExpect(jsonPath("$.requiredQualifications[0]").value("Java"));
     }
 
     @Test
