@@ -61,3 +61,12 @@ Authorization: Bearer ungueltiger.token
 {
   "name": "Projekt mit falschem Token"
 }
+
+### Mitarbeiter einem Projekt zuordnen
+POST http://localhost:8080/project/1/employees/2
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "qualification": "Java"
+}
