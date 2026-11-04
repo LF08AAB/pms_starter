@@ -1,13 +1,11 @@
 package de.szut.pms.employee;
 
+import java.util.Optional;
+
 /** Zugriff auf den Employee-Service. */
 public interface EmployeeClient {
 
-    /**
-     * Prüft, ob die Mitarbeiter-ID im Employee-Service existiert.
-     *
-     * @throws EmployeeNotFoundException     wenn der Mitarbeiter nicht existiert
-     * @throws EmployeeServiceUnavailableException wenn der Service nicht erreichbar ist
-     */
     void verifyExists(Long employeeId);
+
+    Optional<EmployeeDetails> findById(Long employeeId);
 }
