@@ -127,6 +127,25 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.employees").isEmpty());
     }
 
+    @Test
+    @WithMockUser
+    void removeEmployee_returnsNotFound_whenProjectDoesNotExist() throws Exception {
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}", Long.MAX_VALUE, 42L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    @WithMockUser
+    void removeEmployee_returnsNotFound_whenEmployeeIsNotAssigned() throws Exception {
+        ProjectEntity project = createTestProject("Projekt ohne Mitarbeiter", 1L, 2L);
+
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}",
+                        project.getProjectId(), 42L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
     // T_04: Kein JWT / keine Authentifizierung
     @Test
     void getAllProjects_returnsUnauthorizedWithoutAuthentication() throws Exception {
