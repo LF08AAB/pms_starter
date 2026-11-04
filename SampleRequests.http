@@ -99,3 +99,18 @@ Authorization: Bearer {{bearer_token}}
   "requiredQualifications": ["Java"],
   "startDate": "2026-11-01",
   "endDate": "2027-03-31"
+
+### Projekt anlegen ohne Kunden-ID (-> 404 Not Found, kein Projekt wird angelegt)
+POST http://localhost:8080/project
+Content-Type: application/json
+Authorization: ******
+
+{
+  "name": "Projekt mit ungültigem Kunden",
+  "responsibleEmployeeId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Kunden-ID ist ungültig",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
