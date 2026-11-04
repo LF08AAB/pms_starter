@@ -69,9 +69,7 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public List<ProjectDto> getEmployeeProjects(Long employeeId) {
-        return repository.findAll().stream()
-                .filter(project -> project.getEmployees().stream()
-                        .anyMatch(employee -> employeeId.equals(employee.getEmployeeId())))
+        return repository.findProjectsByEmployeeId(employeeId).stream()
                 .map(mapper::toDto)
                 .toList();
     }
