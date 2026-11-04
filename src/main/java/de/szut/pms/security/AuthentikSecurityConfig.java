@@ -54,6 +54,7 @@ public class AuthentikSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/project/*").authenticated()
                         .requestMatchers(HttpMethod.POST, "/project").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/project/*").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/project/*/employees/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/project/*").authenticated()
                         .requestMatchers("/project", "/project/**").authenticated()
                         .anyRequest().permitAll()

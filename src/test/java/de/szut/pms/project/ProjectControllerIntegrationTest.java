@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
 
@@ -246,6 +247,21 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.employees.length()").value(1))
                 .andExpect(jsonPath("$.employees[0].employeeId").value(99))
                 .andExpect(jsonPath("$.employees[0].qualification").value("Kotlin"));
+    }
+
+    @Test
+    void removeEmployee_returnsUnauthorizedWithoutAuthentication() throws Exception {
+        ProjectEntity project = createTestProject("Geschütztes Projekt", 1L, 2L);
+        ProjectEmployeeEntity assignment = new ProjectEmployeeEntity(42L, "Java");
+        assignment.setProject(project);
+        project.getEmployees().add(assignment);
+        project = projectRepository.saveAndFlush(project);
+        Long projectId = project.getProjectId();
+
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}", projectId, 42L))
+                .andExpect(status().isUnauthorized());
+
+        assertTrue(projectEmployeeRepository.existsByProject_ProjectIdAndEmployeeId(projectId, 42L));
     }
 
     // T_04: Kein JWT / keine Authentifizierung
