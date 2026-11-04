@@ -1,10 +1,14 @@
 package de.szut.pms.project;
 
+import de.szut.pms.customer.CustomerClient;
+import de.szut.pms.customer.CustomerNotFoundException;
 import de.szut.pms.employee.EmployeeClient;
 import de.szut.pms.employee.EmployeeDetails;
 import de.szut.pms.employee.EmployeeNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -15,19 +19,29 @@ public class ProjectService {
     private final ProjectRepository repository;
     private final ProjectMapper mapper;
     private final EmployeeClient employeeClient;
+    private final CustomerClient customerClient;
 
-    public ProjectService(
-            ProjectRepository repository, ProjectMapper mapper, EmployeeClient employeeClient) {
+    public ProjectService(ProjectRepository repository, ProjectMapper mapper, EmployeeClient employeeClient,
+                          CustomerClient customerClient) {
         this.repository = repository;
         this.mapper = mapper;
         this.employeeClient = employeeClient;
+        this.customerClient = customerClient;
     }
 
     @Transactional
     public ProjectDto create(CreateProjectDto dto) {
         verifyEmployee(dto.responsibleEmployeeId());
+        verifyCustomer(dto.customerId());
         ProjectEntity saved = repository.save(mapper.toEntity(dto));
         return mapper.toDto(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectDto getById(Long projectId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        return mapper.toDto(project);
     }
 
     @Transactional
@@ -35,6 +49,7 @@ public class ProjectService {
         ProjectEntity entity = repository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
         verifyEmployee(dto.responsibleEmployeeId());
+        verifyCustomer(dto.customerId());
         mapper.updateEntity(entity, dto);
         return mapper.toDto(repository.save(entity));
     }
@@ -63,7 +78,9 @@ public class ProjectService {
             throw new EmployeeAlreadyAssignedException(projectId, employeeId);
         }
 
-        project.getEmployees().add(new AssignedEmployee(employeeId, qualification));
+        ProjectEmployeeEntity assignment = new ProjectEmployeeEntity(employeeId, qualification);
+        assignment.setProject(project);
+        project.getEmployees().add(assignment);
         return mapper.toDto(repository.save(project));
     }
 
@@ -74,9 +91,37 @@ public class ProjectService {
         repository.delete(project);
     }
 
+    @Transactional
+    public ProjectDto removeEmployee(Long projectId, Long employeeId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        boolean removed = project.getEmployees().removeIf(
+                employee -> employee.getEmployeeId().equals(employeeId));
+        if (!removed) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Mitarbeiter " + employeeId + " ist Projekt " + projectId + " nicht zugeordnet.");
+        }
+        return mapper.toDto(project);
+    }
+    @Transactional(readOnly = true)
+    public List<ProjectDto> getEmployeeProjects(Long employeeId) {
+        return repository.findAll().stream()
+                .filter(project -> project.getEmployees().stream()
+                        .anyMatch(employee -> employeeId.equals(employee.getEmployeeId())))
+                .map(mapper::toDto)
+                .toList();
+    }
+
     private void verifyEmployee(Long employeeId) {
         if (employeeId != null) {
             employeeClient.verifyExists(employeeId);
+        }
+    }
+
+    private void verifyCustomer(Long customerId) {
+        if (!customerClient.existsById(customerId)) {
+            throw new CustomerNotFoundException(customerId);
         }
     }
 }
