@@ -11,6 +11,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import de.szut.pms.employee.EmployeeNotFoundException;
+import de.szut.pms.employee.EmployeeServiceUnauthorizedException;
+import de.szut.pms.employee.EmployeeServiceUnavailableException;
 import de.szut.pms.hello.HelloNotFoundException;
 import de.szut.pms.project.ProjectNotFoundException;
 
@@ -39,6 +42,30 @@ public class ApiExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Nicht gefunden");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    public ProblemDetail handleEmployeeNotFound(EmployeeNotFoundException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Mitarbeiter nicht gefunden");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeServiceUnauthorizedException.class)
+    public ProblemDetail handleEmployeeServiceUnauthorized(EmployeeServiceUnauthorizedException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problem.setTitle("Nicht autorisiert");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeServiceUnavailableException.class)
+    public ProblemDetail handleEmployeeServiceUnavailable(EmployeeServiceUnavailableException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+        problem.setTitle("Employee-Service nicht verfügbar");
         return problem;
     }
 
