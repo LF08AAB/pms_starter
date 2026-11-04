@@ -62,6 +62,13 @@ Authorization: Bearer ungueltiger.token
   "name": "Projekt mit falschem Token"
 }
 
+### Mitarbeiter einem Projekt zuordnen
+POST http://localhost:8080/project/1/employees/2
+
+{
+  "qualification": "Java"
+}
+
 ### Projekt anlegen mit nicht existierender Mitarbeiter-ID (-> 404 Not Found, kein Projekt wird angelegt)
 POST http://localhost:8080/project
 Content-Type: application/json
@@ -92,4 +99,3 @@ Authorization: Bearer {{bearer_token}}
   "requiredQualifications": ["Java"],
   "startDate": "2026-11-01",
   "endDate": "2027-03-31"
-}
