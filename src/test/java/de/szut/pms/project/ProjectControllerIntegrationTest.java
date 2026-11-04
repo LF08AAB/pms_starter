@@ -24,14 +24,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Autowired
+    private ProjectEmployeeRepository projectEmployeeRepository;
     @MockitoBean
     private EmployeeClient employeeClient;
 
@@ -63,6 +67,37 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
         project.setEndDate(endDate);
 
         return projectRepository.save(project);
+    }
+
+    @Test
+    @WithMockUser
+    void assignEmployee_returnsCreatedAndPersistsAssignment() throws Exception {
+        ProjectEntity project = createTestProject("Testprojekt", 1L, 2L);
+        when(employeeClient.findById(3L))
+                .thenReturn(Optional.of(new EmployeeDetails(Set.of("Java"))));
+        String assignmentPath = "/project/" + project.getProjectId() + "/employees/3";
+
+        mockMvc.perform(post(assignmentPath)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"qualification": "Java"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "http://localhost" + assignmentPath))
+                .andExpect(jsonPath("$.projectId").value(project.getProjectId()));
+
+        mockMvc.perform(get("/project/{projectId}", project.getProjectId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.employees.length()").value(1))
+                .andExpect(jsonPath("$.employees[0].employeeId").value(3))
+                .andExpect(jsonPath("$.employees[0].qualification").value("Java"));
+
+        mockMvc.perform(post(assignmentPath)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"qualification": "Java"}
+                                """))
+                .andExpect(status().isConflict());
     }
 
     // T_05: Keine Projekte vorhanden
@@ -218,7 +253,26 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
         mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}",
                         project.getProjectId(), 42L))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Mitarbeiter nicht zugeordnet"))
+                .andExpect(jsonPath("$.detail").value(
+                        "Mitarbeiter 42 ist Projekt " + project.getProjectId() + " nicht zugeordnet."));
+    }
+
+    @Test
+    @WithMockUser
+    void removeEmployee_permanentlyDeletesProjectAssignment() throws Exception {
+        ProjectEntity project = createTestProject("Projekt mit Mitarbeiter", 1L, 2L);
+        ProjectEmployeeEntity assignment = new ProjectEmployeeEntity(42L, "Java");
+        assignment.setProject(project);
+        project.getEmployees().add(assignment);
+        project = projectRepository.saveAndFlush(project);
+        Long projectId = project.getProjectId();
+
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}", projectId, 42L))
+                .andExpect(status().isOk());
+
+        assertFalse(projectEmployeeRepository.existsByProject_ProjectIdAndEmployeeId(projectId, 42L));
     }
 
     // T_04: Kein JWT / keine Authentifizierung
