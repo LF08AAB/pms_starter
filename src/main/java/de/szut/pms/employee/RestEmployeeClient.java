@@ -54,6 +54,10 @@ public class RestEmployeeClient implements EmployeeClient {
                 throw new EmployeeServiceUnavailableException(
                         new IllegalStateException("Employee-Service returned an empty response."));
             }
+            if (employee.qualifications() == null) {
+                throw new EmployeeServiceUnavailableException(
+                        new IllegalStateException("Employee-Service returned no qualifications."));
+            }
             return Optional.of(employee);
         } catch (HttpClientErrorException.NotFound ex) {
             return Optional.empty();
