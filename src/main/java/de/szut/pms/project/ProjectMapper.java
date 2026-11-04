@@ -13,7 +13,8 @@ public class ProjectMapper {
                 project.getName(),
                 project.getStartDate(),
                 project.getEndDate(),
-                assignment.getQualification());
+                assignment.getQualification(),
+                project.getResponsibleEmployeeId());
     }
 
     public ProjectDto toDto(ProjectEntity entity) {

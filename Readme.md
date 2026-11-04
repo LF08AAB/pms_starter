@@ -68,6 +68,34 @@ http://localhost:8089/swagger
 Ruft ihn über `employee-service.base-url` aus `application.properties` auf (`http://localhost:8089`),
 nicht über eine feste Adresse im Code — dann bleibt die Adresse an einer Stelle änderbar.
 
+# Mitarbeiterprojekte (Story 9)
+
+`GET /project/employees/{employeeId}` liefert die zugeordneten Projekte eines
+Mitarbeiters. Der Endpunkt erfordert wie die anderen Projekt-Endpunkte einen
+Bearer-Token.
+
+```json
+{
+  "employeeId": 2,
+  "projects": [
+    {
+      "projectId": 1,
+      "name": "Neues Projekt",
+      "startDate": "2026-11-01",
+      "endDate": "2027-03-31",
+      "qualification": "Java",
+      "responsibleEmployeeId": 1
+    }
+  ]
+}
+```
+
+`qualification` stammt aus der Zuordnung dieses Mitarbeiters, nicht aus den
+allgemeinen Projektanforderungen. `responsibleEmployeeId` bezeichnet den
+Projektleiter aus den gespeicherten Projektdaten, wie bei den bestehenden
+Projektantworten. Es ist kein weiterer Employee-Service-Aufruf pro Projekt
+erforderlich. Die Projektleitung allein ersetzt keine Mitarbeiterzuordnung.
+
 # Kunden-Service
 
 Der Kunden-Service existiert noch nicht — er wird parallel von einem anderen Team gebaut. Das
