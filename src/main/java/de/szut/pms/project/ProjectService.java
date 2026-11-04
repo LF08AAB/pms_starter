@@ -89,7 +89,8 @@ public class ProjectService {
         if (!removed) {
             throw new ProjectEmployeeAssignmentNotFoundException(projectId, employeeId);
         }
-        return mapper.toDto(project);
+        ProjectEntity updatedProject = repository.saveAndFlush(project);
+        return mapper.toDto(updatedProject);
     }
     @Transactional(readOnly = true)
     public List<ProjectDto> getEmployeeProjects(Long employeeId) {

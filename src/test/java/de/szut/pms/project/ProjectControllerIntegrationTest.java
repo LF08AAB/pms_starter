@@ -227,6 +227,27 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
         assertFalse(projectEmployeeRepository.existsByProject_ProjectIdAndEmployeeId(projectId, 42L));
     }
 
+    @Test
+    @WithMockUser
+    void removeEmployee_returnsProjectWithCurrentEmployeeList() throws Exception {
+        ProjectEntity project = createTestProject("Projekt mit zwei Mitarbeitern", 1L, 2L);
+        ProjectEmployeeEntity removedAssignment = new ProjectEmployeeEntity(42L, "Java");
+        removedAssignment.setProject(project);
+        ProjectEmployeeEntity remainingAssignment = new ProjectEmployeeEntity(99L, "Kotlin");
+        remainingAssignment.setProject(project);
+        project.getEmployees().add(removedAssignment);
+        project.getEmployees().add(remainingAssignment);
+        project = projectRepository.saveAndFlush(project);
+
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}",
+                        project.getProjectId(), 42L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.projectId").value(project.getProjectId()))
+                .andExpect(jsonPath("$.employees.length()").value(1))
+                .andExpect(jsonPath("$.employees[0].employeeId").value(99))
+                .andExpect(jsonPath("$.employees[0].qualification").value("Kotlin"));
+    }
+
     // T_04: Kein JWT / keine Authentifizierung
     @Test
     void getAllProjects_returnsUnauthorizedWithoutAuthentication() throws Exception {
