@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.List;
@@ -80,25 +82,47 @@ public class ProjectController {
 
     @Operation(
             summary = "Projekte eines Mitarbeiters abrufen",
-            description = "Gibt die Projekte zur angegebenen Mitarbeiter-ID als JSON zurueck."
+            description = "Prueft den Mitarbeiter im Employee-Service und liefert alle zugeordneten Projekte, "
+                    + "einschliesslich beendeter Projekte. Geloeschte Projekte sind ausgeschlossen. "
+                    + "Die Antwort enthaelt Mitarbeiter-ID, Projektdaten, Einsatzqualifikation und Projektleiter-ID."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Projektliste; ohne Zuordnungen ist projects leer"),
+            @ApiResponse(responseCode = "401", description = "Authentifizierung fehlt oder Employee-Service lehnt Token ab"),
+            @ApiResponse(responseCode = "404", description = "Mitarbeiter existiert nicht im Employee-Service"),
+            @ApiResponse(responseCode = "503", description = "Employee-Service ist nicht verfuegbar")
+    })
     @GetMapping("/employees/{employeeId}")
-    public ResponseEntity<List<ProjectDto>> getEmployeeProjects(@PathVariable Long employeeId) {
+    public ResponseEntity<EmployeeProjectsDto> getEmployeeProjects(@PathVariable Long employeeId) {
         return ResponseEntity.ok(service.getEmployeeProjects(employeeId));
     }
 
     @Operation(
             summary = "Mitarbeiter einem Projekt zuordnen",
-            description = "Ordnet einen Mitarbeiter einem Projekt zu und gibt die aktualisierten Projektdaten zurück."
+            description = "Ordnet einen Mitarbeiter einem Projekt zu und antwortet mit HTTP 201 und der URI der Zuordnung."
     )
 
     @PostMapping("/{projectId}/employees/{employeeId}")
     public ResponseEntity<ProjectDto> assignEmployee(
             @PathVariable Long projectId,
             @PathVariable Long employeeId,
-            @RequestBody AssignEmployeeDto dto) {
+            @RequestBody @Valid AssignEmployeeDto dto) {
         ProjectDto updated = service.assignEmployee(projectId, employeeId, dto.qualification());
-        return ResponseEntity.ok(updated);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .build()
+                .toUri();
+        return ResponseEntity.created(location).body(updated);
+    }
+
+    @Operation(
+            summary = "Mitarbeiter aus einem Projekt entfernen",
+            description = "Entfernt die Mitarbeiterzuordnung anhand der Projekt- und Mitarbeiter-ID."
+    )
+    @DeleteMapping("/{projectId}/employees/{employeeId}")
+    public ResponseEntity<ProjectDto> removeEmployee(
+            @PathVariable Long projectId,
+            @PathVariable Long employeeId) {
+        return ResponseEntity.ok(service.removeEmployee(projectId, employeeId));
     }
 
 

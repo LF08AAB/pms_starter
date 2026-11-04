@@ -90,12 +90,27 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjectDto> getEmployeeProjects(Long employeeId) {
-        return repository.findAll().stream()
-                .filter(project -> project.getEmployees().stream()
-                        .anyMatch(employee -> employeeId.equals(employee.getEmployeeId())))
-                .map(mapper::toDto)
+    public EmployeeProjectsDto getEmployeeProjects(Long employeeId) {
+        employeeClient.verifyExists(employeeId);
+        List<EmployeeProjectDto> projects = repository.findProjectsByEmployeeId(employeeId).stream()
+                .flatMap(project -> project.getEmployees().stream())
+                .filter(assignment -> employeeId.equals(assignment.getEmployeeId()))
+                .map(mapper::toEmployeeProjectDto)
                 .toList();
+        return new EmployeeProjectsDto(employeeId, projects);
+    }
+
+    @Transactional
+    public ProjectDto removeEmployee(Long projectId, Long employeeId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        boolean removed = project.getEmployees().removeIf(
+                employee -> employee.getEmployeeId().equals(employeeId));
+        if (!removed) {
+            throw new ProjectEmployeeAssignmentNotFoundException(projectId, employeeId);
+        }
+        ProjectEntity updatedProject = repository.saveAndFlush(project);
+        return mapper.toDto(updatedProject);
     }
 
     private void verifyEmployee(Long employeeId) {
