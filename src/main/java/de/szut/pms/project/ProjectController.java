@@ -94,6 +94,17 @@ public class ProjectController {
     }
 
     @Operation(
+            summary = "Mitarbeiter aus einem Projekt entfernen",
+            description = "Entfernt die Mitarbeiterzuordnung anhand der Projekt- und Mitarbeiter-ID."
+    )
+    @DeleteMapping("/{projectId}/employees/{employeeId}")
+    public ResponseEntity<ProjectDto> removeEmployee(
+            @PathVariable Long projectId,
+            @PathVariable Long employeeId) {
+        return ResponseEntity.ok(service.removeEmployee(projectId, employeeId));
+    }
+
+    @Operation(
             summary = "Projekt löschen",
             description = "Löscht ein bestehendes Projekt anhand seiner Projekt-ID."
     )

@@ -3,6 +3,8 @@ package de.szut.pms.project;
 import de.szut.pms.employee.EmployeeClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -58,6 +60,20 @@ public class ProjectService {
         ProjectEntity project = repository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
         repository.delete(project);
+    }
+
+    @Transactional
+    public ProjectDto removeEmployee(Long projectId, Long employeeId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        boolean removed = project.getEmployees().removeIf(
+                employee -> employee.getEmployeeId().equals(employeeId));
+        if (!removed) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Mitarbeiter " + employeeId + " ist Projekt " + projectId + " nicht zugeordnet.");
+        }
+        return mapper.toDto(project);
     }
 
     private void verifyEmployee(Long employeeId) {
