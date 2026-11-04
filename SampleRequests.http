@@ -61,3 +61,35 @@ Authorization: Bearer ungueltiger.token
 {
   "name": "Projekt mit falschem Token"
 }
+
+### Projekt anlegen mit nicht existierender Mitarbeiter-ID (-> 404 Not Found, kein Projekt wird angelegt)
+POST http://localhost:8080/project
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "name": "Projekt mit unbekanntem Mitarbeiter",
+  "responsibleEmployeeId": 999999,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Mitarbeiter-ID existiert nicht im Employee-Service",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
+
+### Projekt aktualisieren mit nicht existierender Mitarbeiter-ID (-> 404 Not Found)
+PUT http://localhost:8080/project/1
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "name": "Projekt mit unbekanntem Mitarbeiter",
+  "responsibleEmployeeId": 999999,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Mitarbeiter-ID existiert nicht im Employee-Service",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
