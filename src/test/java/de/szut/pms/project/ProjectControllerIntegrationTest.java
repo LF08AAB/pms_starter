@@ -70,7 +70,7 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "http://localhost" + assignmentPath))
-                .andExpect(content().string(""));
+                .andExpect(jsonPath("$.projectId").value(project.getProjectId()));
 
         mockMvc.perform(get("/project/{projectId}", project.getProjectId()))
                 .andExpect(status().isOk())
