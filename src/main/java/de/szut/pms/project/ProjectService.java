@@ -57,4 +57,12 @@ public class ProjectService {
             throw new EmployeeQualificationNotFoundException(employeeId, qualification);
         }
     }
+
+    @Transactional
+    public void deleteProject(Long id) {
+        ProjectEntity project = repository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+        repository.delete(project);
+        repository.delete(project);
+    }
 }
