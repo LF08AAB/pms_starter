@@ -20,13 +20,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Autowired
+    private ProjectEmployeeRepository projectEmployeeRepository;
     @MockitoBean
     private EmployeeClient employeeClient;
 
@@ -201,6 +205,60 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
     void getById_returnsUnauthorizedWithoutAuthentication() throws Exception {
         mockMvc.perform(get("/project/{projectId}", 1L))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void removeEmployee_returnsUpdatedProject() throws Exception {
+        ProjectEntity project = createTestProject("Projekt mit Mitarbeiter", 1L, 2L);
+        ProjectEmployeeEntity assignment = new ProjectEmployeeEntity(42L, "Java");
+        assignment.setProject(project);
+        project.getEmployees().add(assignment);
+        project = projectRepository.saveAndFlush(project);
+
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}",
+                        project.getProjectId(), 42L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.projectId").value(project.getProjectId()))
+                .andExpect(jsonPath("$.employees").isEmpty());
+    }
+
+    @Test
+    @WithMockUser
+    void removeEmployee_returnsNotFound_whenProjectDoesNotExist() throws Exception {
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}", Long.MAX_VALUE, 42L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    @WithMockUser
+    void removeEmployee_returnsNotFound_whenEmployeeIsNotAssigned() throws Exception {
+        ProjectEntity project = createTestProject("Projekt ohne Mitarbeiter", 1L, 2L);
+
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}",
+                        project.getProjectId(), 42L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Mitarbeiter nicht zugeordnet"))
+                .andExpect(jsonPath("$.detail").value(
+                        "Mitarbeiter 42 ist Projekt " + project.getProjectId() + " nicht zugeordnet."));
+    }
+
+    @Test
+    @WithMockUser
+    void removeEmployee_permanentlyDeletesProjectAssignment() throws Exception {
+        ProjectEntity project = createTestProject("Projekt mit Mitarbeiter", 1L, 2L);
+        ProjectEmployeeEntity assignment = new ProjectEmployeeEntity(42L, "Java");
+        assignment.setProject(project);
+        project.getEmployees().add(assignment);
+        project = projectRepository.saveAndFlush(project);
+        Long projectId = project.getProjectId();
+
+        mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}", projectId, 42L))
+                .andExpect(status().isOk());
+
+        assertFalse(projectEmployeeRepository.existsByProject_ProjectIdAndEmployeeId(projectId, 42L));
     }
 
     // T_04: Kein JWT / keine Authentifizierung

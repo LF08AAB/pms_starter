@@ -89,6 +89,17 @@ public class ProjectService {
         repository.delete(project);
     }
 
+    @Transactional
+    public ProjectDto removeEmployee(Long projectId, Long employeeId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        boolean removed = project.getEmployees().removeIf(
+                employee -> employee.getEmployeeId().equals(employeeId));
+        if (!removed) {
+            throw new ProjectEmployeeAssignmentNotFoundException(projectId, employeeId);
+        }
+        return mapper.toDto(project);
+    }
     @Transactional(readOnly = true)
     public List<ProjectDto> getEmployeeProjects(Long employeeId) {
         return repository.findAll().stream()
