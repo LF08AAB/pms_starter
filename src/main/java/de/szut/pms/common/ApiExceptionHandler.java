@@ -11,7 +11,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import de.szut.pms.hello.HelloNotFoundException;
 import de.szut.pms.project.ProjectNotFoundException;
 
 /**
@@ -25,14 +24,6 @@ import de.szut.pms.project.ProjectNotFoundException;
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApiExceptionHandler {
-
-    @ExceptionHandler(HelloNotFoundException.class)
-    public ProblemDetail handleNotFound(HelloNotFoundException ex) {
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-        problem.setTitle("Nicht gefunden");
-        return problem;
-    }
 
     @ExceptionHandler(ProjectNotFoundException.class)
     public ProblemDetail handleProjectNotFound(ProjectNotFoundException ex) {
