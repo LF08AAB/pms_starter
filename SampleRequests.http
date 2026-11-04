@@ -22,25 +22,74 @@ Authorization: Bearer {{bearer_token}}
 DELETE http://localhost:8080/hello/1
 Authorization: Bearer {{bearer_token}}
 
-### Ein Projekt anlegen
+### Projekt anlegen (authentifiziert -> 201 Created)
 POST http://localhost:8080/project
 Content-Type: application/json
 Authorization: Bearer {{bearer_token}}
 
 {
-  "name": "string",
-  "responsibleEmployeeId": 0,
-  "customerId": 0,
-  "contactPerson": "string",
-  "comment": "string",
-  "requiredQualifications": [
-    "string"
-  ],
-  "startDate": "2026-10-28",
-  "endDate": "2026-10-28"
+  "name": "Neues Projekt",
+  "responsibleEmployeeId": 1,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Testprojekt",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
 }
 
-### Alle Projekte abrufen
-GET localhost:8080/project
+### Projekt anlegen ohne Token (-> 401 Unauthorized, kein Projekt wird angelegt)
+POST http://localhost:8080/project
+Content-Type: application/json
+
+{
+  "name": "Projekt ohne Auth",
+  "responsibleEmployeeId": 1,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Darf nicht angelegt werden",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
+
+### Projekt anlegen mit ungültigem Token (-> 401 Unauthorized)
+POST http://localhost:8080/project
+Content-Type: application/json
+Authorization: Bearer ungueltiger.token
+
+{
+  "name": "Projekt mit falschem Token"
+}
+
+### Projekt anlegen mit nicht existierender Mitarbeiter-ID (-> 404 Not Found, kein Projekt wird angelegt)
+POST http://localhost:8080/project
+Content-Type: application/json
 Authorization: Bearer {{bearer_token}}
 
+{
+  "name": "Projekt mit unbekanntem Mitarbeiter",
+  "responsibleEmployeeId": 999999,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Mitarbeiter-ID existiert nicht im Employee-Service",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
+
+### Projekt aktualisieren mit nicht existierender Mitarbeiter-ID (-> 404 Not Found)
+PUT http://localhost:8080/project/1
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "name": "Projekt mit unbekanntem Mitarbeiter",
+  "responsibleEmployeeId": 999999,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Mitarbeiter-ID existiert nicht im Employee-Service",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
