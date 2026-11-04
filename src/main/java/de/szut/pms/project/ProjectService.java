@@ -7,8 +7,6 @@ import de.szut.pms.employee.EmployeeDetails;
 import de.szut.pms.employee.EmployeeNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -98,9 +96,7 @@ public class ProjectService {
         boolean removed = project.getEmployees().removeIf(
                 employee -> employee.getEmployeeId().equals(employeeId));
         if (!removed) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Mitarbeiter " + employeeId + " ist Projekt " + projectId + " nicht zugeordnet.");
+            throw new ProjectEmployeeAssignmentNotFoundException(projectId, employeeId);
         }
         return mapper.toDto(project);
     }
