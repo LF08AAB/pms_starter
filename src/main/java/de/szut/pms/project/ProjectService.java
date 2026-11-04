@@ -1,6 +1,10 @@
 package de.szut.pms.project;
 
+import de.szut.pms.customer.CustomerClient;
+import de.szut.pms.customer.CustomerNotFoundException;
 import de.szut.pms.employee.EmployeeClient;
+import de.szut.pms.employee.EmployeeDetails;
+import de.szut.pms.employee.EmployeeNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,18 +16,21 @@ public class ProjectService {
 
     private final ProjectRepository repository;
     private final ProjectMapper mapper;
-
     private final EmployeeClient employeeClient;
+    private final CustomerClient customerClient;
 
-    public ProjectService(ProjectRepository repository, ProjectMapper mapper, EmployeeClient employeeClient) {
+    public ProjectService(ProjectRepository repository, ProjectMapper mapper, EmployeeClient employeeClient,
+                          CustomerClient customerClient) {
         this.repository = repository;
         this.mapper = mapper;
         this.employeeClient = employeeClient;
+        this.customerClient = customerClient;
     }
 
     @Transactional
     public ProjectDto create(CreateProjectDto dto) {
         verifyEmployee(dto.responsibleEmployeeId());
+        verifyCustomer(dto.customerId());
         ProjectEntity saved = repository.save(mapper.toEntity(dto));
         return mapper.toDto(saved);
     }
@@ -40,6 +47,7 @@ public class ProjectService {
         ProjectEntity entity = repository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
         verifyEmployee(dto.responsibleEmployeeId());
+        verifyCustomer(dto.customerId());
         mapper.updateEntity(entity, dto);
         return mapper.toDto(repository.save(entity));
     }
@@ -54,15 +62,71 @@ public class ProjectService {
     }
 
     @Transactional
+    public ProjectDto assignEmployee(Long projectId, Long employeeId, String qualification) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        EmployeeDetails employee = employeeClient.findById(employeeId)
+                .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+        if (!employee.qualifications().contains(qualification)) {
+            throw new EmployeeQualificationNotFoundException(employeeId, qualification);
+        }
+        if (project.getEmployees().stream()
+                .anyMatch(assigned -> assigned.getEmployeeId().equals(employeeId))) {
+            throw new EmployeeAlreadyAssignedException(projectId, employeeId);
+        }
+
+        if (repository.existsOverlappingAssignment(
+                projectId, employeeId, project.getStartDate(), project.getEndDate())) {
+            throw new EmployeeAssignmentConflictException(employeeId, projectId);
+        }
+
+        ProjectEmployeeEntity assignment = new ProjectEmployeeEntity(employeeId, qualification);
+        assignment.setProject(project);
+        project.getEmployees().add(assignment);
+        return mapper.toDto(repository.save(project));
+    }
+
+    @Transactional
     public void deleteProject(Long id) {
         ProjectEntity project = repository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
         repository.delete(project);
     }
 
+    @Transactional(readOnly = true)
+    public EmployeeProjectsDto getEmployeeProjects(Long employeeId) {
+        employeeClient.verifyExists(employeeId);
+        List<EmployeeProjectDto> projects = repository.findProjectsByEmployeeId(employeeId).stream()
+                .flatMap(project -> project.getEmployees().stream())
+                .filter(assignment -> employeeId.equals(assignment.getEmployeeId()))
+                .map(mapper::toEmployeeProjectDto)
+                .toList();
+        return new EmployeeProjectsDto(employeeId, projects);
+    }
+
+    @Transactional
+    public ProjectDto removeEmployee(Long projectId, Long employeeId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        boolean removed = project.getEmployees().removeIf(
+                employee -> employee.getEmployeeId().equals(employeeId));
+        if (!removed) {
+            throw new ProjectEmployeeAssignmentNotFoundException(projectId, employeeId);
+        }
+        ProjectEntity updatedProject = repository.saveAndFlush(project);
+        return mapper.toDto(updatedProject);
+    }
+
     private void verifyEmployee(Long employeeId) {
         if (employeeId != null) {
             employeeClient.verifyExists(employeeId);
+        }
+    }
+
+    private void verifyCustomer(Long customerId) {
+        if (!customerClient.existsById(customerId)) {
+            throw new CustomerNotFoundException(customerId);
         }
     }
 }

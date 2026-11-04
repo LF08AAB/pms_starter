@@ -6,6 +6,17 @@ import java.util.HashSet;
 
 @Component
 public class ProjectMapper {
+    public EmployeeProjectDto toEmployeeProjectDto(ProjectEmployeeEntity assignment) {
+        ProjectEntity project = assignment.getProject();
+        return new EmployeeProjectDto(
+                project.getProjectId(),
+                project.getName(),
+                project.getStartDate(),
+                project.getEndDate(),
+                assignment.getQualification(),
+                project.getResponsibleEmployeeId());
+    }
+
     public ProjectDto toDto(ProjectEntity entity) {
         return new ProjectDto(
         entity.getProjectId(),
@@ -17,7 +28,12 @@ public class ProjectMapper {
         // klären, ob benötigte Qualifikationen als Namen oder Skill-IDs gespeichert werden sollen
         new HashSet<>(entity.getRequiredQualifications()),
         entity.getStartDate(),
-        entity.getEndDate());
+        entity.getEndDate(),
+        entity.getEmployees().stream()
+                .map(employee -> new ProjectEmployeeDto(
+                        employee.getEmployeeId(),
+                        employee.getQualification()))
+                .toList());
     }
 
     public ProjectEntity toEntity(CreateProjectDto dto) {

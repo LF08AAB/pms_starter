@@ -7,14 +7,20 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import de.szut.pms.customer.CustomerNotFoundException;
 import de.szut.pms.employee.EmployeeNotFoundException;
 import de.szut.pms.employee.EmployeeServiceUnauthorizedException;
 import de.szut.pms.employee.EmployeeServiceUnavailableException;
 import de.szut.pms.hello.HelloNotFoundException;
+import de.szut.pms.project.EmployeeAlreadyAssignedException;
+import de.szut.pms.project.EmployeeAssignmentConflictException;
+import de.szut.pms.project.EmployeeQualificationNotFoundException;
+import de.szut.pms.project.ProjectEmployeeAssignmentNotFoundException;
 import de.szut.pms.project.ProjectNotFoundException;
 
 /**
@@ -45,6 +51,15 @@ public class ApiExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(ProjectEmployeeAssignmentNotFoundException.class)
+    public ProblemDetail handleProjectEmployeeAssignmentNotFound(
+            ProjectEmployeeAssignmentNotFoundException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Mitarbeiter nicht zugeordnet");
+        return problem;
+    }
+
     @ExceptionHandler(EmployeeNotFoundException.class)
     public ProblemDetail handleEmployeeNotFound(EmployeeNotFoundException ex) {
         ProblemDetail problem =
@@ -53,8 +68,42 @@ public class ApiExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(EmployeeQualificationNotFoundException.class)
+    public ProblemDetail handleEmployeeQualificationNotFound(
+            EmployeeQualificationNotFoundException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        problem.setTitle("Qualifikation nicht vorhanden");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeAlreadyAssignedException.class)
+    public ProblemDetail handleEmployeeAlreadyAssigned(EmployeeAlreadyAssignedException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Zuordnung bereits vorhanden");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeAssignmentConflictException.class)
+    public ProblemDetail handleAssignmentConflict(EmployeeAssignmentConflictException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Zeitliche Überschneidung");
+        return problem;
+    }
+
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public ProblemDetail handleCustomerNotFound(CustomerNotFoundException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Kunde nicht gefunden");
+        return problem;
+    }
+
     @ExceptionHandler(EmployeeServiceUnauthorizedException.class)
-    public ProblemDetail handleEmployeeServiceUnauthorized(EmployeeServiceUnauthorizedException ex) {
+    public ProblemDetail handleEmployeeServiceUnauthorized(
+            EmployeeServiceUnauthorizedException ex) {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
         problem.setTitle("Nicht autorisiert");
@@ -79,6 +128,15 @@ public class ApiExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Die Anfrage enthält ungültige Felder.");
         problem.setTitle("Ungültige Eingabe");
         problem.setProperty("errors", errors);
+        return problem;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleUnreadable(HttpMessageNotReadableException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Die Anfrage ist nicht lesbar oder enthält ungültige Werte (z. B. ein ungültiges Datum im Format yyyy-MM-dd).");
+        problem.setTitle("Ungültige Eingabe");
         return problem;
     }
 }
