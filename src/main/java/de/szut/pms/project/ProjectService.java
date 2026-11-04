@@ -1,5 +1,7 @@
 package de.szut.pms.project;
 
+import de.szut.pms.customer.CustomerClient;
+import de.szut.pms.customer.CustomerNotFoundException;
 import de.szut.pms.employee.EmployeeClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,16 +16,20 @@ public class ProjectService {
     private final ProjectMapper mapper;
 
     private final EmployeeClient employeeClient;
+    private final CustomerClient customerClient;
 
-    public ProjectService(ProjectRepository repository, ProjectMapper mapper, EmployeeClient employeeClient) {
+    public ProjectService(ProjectRepository repository, ProjectMapper mapper, EmployeeClient employeeClient,
+                          CustomerClient customerClient) {
         this.repository = repository;
         this.mapper = mapper;
         this.employeeClient = employeeClient;
+        this.customerClient = customerClient;
     }
 
     @Transactional
     public ProjectDto create(CreateProjectDto dto) {
         verifyEmployee(dto.responsibleEmployeeId());
+        verifyCustomer(dto.customerId());
         ProjectEntity saved = repository.save(mapper.toEntity(dto));
         return mapper.toDto(saved);
     }
@@ -40,6 +46,7 @@ public class ProjectService {
         ProjectEntity entity = repository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
         verifyEmployee(dto.responsibleEmployeeId());
+        verifyCustomer(dto.customerId());
         mapper.updateEntity(entity, dto);
         return mapper.toDto(repository.save(entity));
     }
@@ -63,6 +70,12 @@ public class ProjectService {
     private void verifyEmployee(Long employeeId) {
         if (employeeId != null) {
             employeeClient.verifyExists(employeeId);
+        }
+    }
+
+    private void verifyCustomer(Long customerId) {
+        if (!customerClient.existsById(customerId)) {
+            throw new CustomerNotFoundException(customerId);
         }
     }
 }
