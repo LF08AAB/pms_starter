@@ -43,14 +43,27 @@ public class ProjectEntity {
 
     private LocalDate endDate;
 
-    public ProjectEntity(String name, Long aLong, Long aLong1, String s, String comment, Set<String> strings, LocalDate localDate, LocalDate localDate1) {
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProjectEmployeeEntity> employees = new ArrayList<>();
+
+    public ProjectEntity(
+            String name,
+            Long responsibleEmployeeId,
+            Long customerId,
+            String contactPerson,
+            String comment,
+            Set<String> requiredQualifications,
+            LocalDate startDate,
+            LocalDate endDate) {
         this.name = name;
-        this.responsibleEmployeeId = aLong;
-        this.customerId = aLong1;
-        this.contactPerson = s;
+        this.responsibleEmployeeId = responsibleEmployeeId;
+        this.customerId = customerId;
+        this.contactPerson = contactPerson;
         this.comment = comment;
-        this.requiredQualifications = strings == null ? new HashSet<>() : new HashSet<>(strings);
-        this.startDate = localDate;
-        this.endDate = localDate1;
+        this.requiredQualifications = requiredQualifications == null
+                ? new HashSet<>()
+                : new HashSet<>(requiredQualifications);
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 }
