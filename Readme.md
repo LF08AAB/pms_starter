@@ -121,6 +121,46 @@ benoetigen Docker und starten eine eigene PostgreSQL-Testdatenbank. Falls Docker
 die alte API-Version des vorhandenen Testcontainers-Clients mit HTTP 400 ablehnt,
 zusaetzlich `"-Dapi.version=1.44"` angeben.
 
+# Projektmitarbeiter (Story 13)
+
+`GET /project/{projectId}/employees` liefert die Mitarbeiterzuordnungen eines
+Projekts und den Abdeckungsstatus seiner benoetigten Qualifikationen. Der
+Endpunkt erfordert einen Bearer-Token und gibt bei unbekannter Projekt-ID HTTP
+404 zurueck. Ein Projekt ohne Zuordnungen wird mit HTTP 200 und einer leeren
+Mitarbeiterliste ausgegeben.
+
+Beispielantwort:
+
+```json
+{
+  "projectId": 1,
+  "name": "Neues Projekt",
+  "employees": [
+    {
+      "employeeId": 2,
+      "qualification": "Java"
+    }
+  ],
+  "requiredQualifications": [
+    {
+      "qualification": "Java",
+      "covered": true
+    },
+    {
+      "qualification": "SQL",
+      "covered": false
+    }
+  ]
+}
+```
+
+Die Qualifikationen der zugeordneten Mitarbeiter werden beim Employee-Service
+abgerufen; der Bearer-Token wird weitergeleitet. `qualification` bei einem
+Mitarbeiter bezeichnet dessen gespeicherte Einsatzqualifikation im Projekt.
+Eine Projektanforderung gilt als abgedeckt, wenn mindestens ein zugeordneter
+Mitarbeiter diese Qualifikation im Employee-Service besitzt. Fehler des
+Employee-Service werden nicht als erfolgreiche oder leere Antwort behandelt.
+
 # Kunden-Service
 
 Der Kunden-Service existiert noch nicht — er wird parallel von einem anderen Team gebaut. Das

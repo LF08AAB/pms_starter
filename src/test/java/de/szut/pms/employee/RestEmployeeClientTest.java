@@ -12,6 +12,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,6 +28,7 @@ class RestEmployeeClientTest {
     private final AtomicInteger responseStatus = new AtomicInteger(200);
     private final AtomicReference<String> requestPath = new AtomicReference<>();
     private final AtomicReference<String> authorization = new AtomicReference<>();
+    private final AtomicReference<String> responseBody = new AtomicReference<>("");
 
     @BeforeEach
     void setUp() throws IOException {
@@ -32,7 +36,14 @@ class RestEmployeeClientTest {
         server.createContext("/employees", exchange -> {
             requestPath.set(exchange.getRequestURI().getPath());
             authorization.set(exchange.getRequestHeaders().getFirst("Authorization"));
-            exchange.sendResponseHeaders(responseStatus.get(), -1);
+            byte[] body = responseBody.get().getBytes(StandardCharsets.UTF_8);
+            if (body.length == 0) {
+                exchange.sendResponseHeaders(responseStatus.get(), -1);
+            } else {
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(responseStatus.get(), body.length);
+                exchange.getResponseBody().write(body);
+            }
             exchange.close();
         });
         server.start();
@@ -57,6 +68,36 @@ class RestEmployeeClientTest {
 
         assertEquals("/employees/2", requestPath.get());
         assertEquals("Bearer test-token", authorization.get());
+    }
+
+    @Test
+    void readsEmployeeQualificationsAndForwardsJwt() {
+        responseBody.set("{\"qualifications\":[\"Java\",\"Kotlin\"]}");
+        Jwt jwt = Jwt.withTokenValue("test-token")
+                .header("alg", "RS256")
+                .claim("sub", "test-user")
+                .build();
+        SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt));
+
+        Optional<EmployeeDetails> employee = client.findById(2L);
+
+        assertEquals(Optional.of(new EmployeeDetails(Set.of("Java", "Kotlin"))), employee);
+        assertEquals("/employees/2", requestPath.get());
+        assertEquals("Bearer " + jwt.getTokenValue(), authorization.get());
+    }
+
+    @Test
+    void returnsEmptyWhenEmployeeIsNotFound() {
+        responseStatus.set(404);
+
+        assertEquals(Optional.empty(), client.findById(2L));
+    }
+
+    @Test
+    void rejectsEmployeeResponseWithoutQualifications() {
+        responseBody.set("{}");
+
+        assertThrows(EmployeeServiceUnavailableException.class, () -> client.findById(2L));
     }
 
     @Test
