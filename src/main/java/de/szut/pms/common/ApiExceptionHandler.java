@@ -7,6 +7,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -79,6 +80,15 @@ public class ApiExceptionHandler {
                 HttpStatus.BAD_REQUEST, "Die Anfrage enthält ungültige Felder.");
         problem.setTitle("Ungültige Eingabe");
         problem.setProperty("errors", errors);
+        return problem;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleUnreadable(HttpMessageNotReadableException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Die Anfrage ist nicht lesbar oder enthält ungültige Werte (z. B. ein ungültiges Datum im Format yyyy-MM-dd).");
+        problem.setTitle("Ungültige Eingabe");
         return problem;
     }
 }
