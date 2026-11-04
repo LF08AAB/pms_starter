@@ -25,6 +25,7 @@ public class ProjectService {
 
     @Transactional
     public ProjectDto create(CreateProjectDto dto) {
+        verifyEmployee(dto.responsibleEmployeeId());
         ProjectEntity saved = repository.save(mapper.toEntity(dto));
         return mapper.toDto(saved);
     }
@@ -33,6 +34,7 @@ public class ProjectService {
     public ProjectDto update(Long id, PutProjectDto dto) {
         ProjectEntity entity = repository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
+        verifyEmployee(dto.responsibleEmployeeId());
         mapper.updateEntity(entity, dto);
         return mapper.toDto(repository.save(entity));
     }
@@ -56,7 +58,6 @@ public class ProjectService {
         if (!employee.qualifications().contains(qualification)) {
             throw new EmployeeQualificationNotFoundException(employeeId, qualification);
         }
-
         if (project.getEmployees().stream()
                 .anyMatch(assigned -> assigned.getEmployeeId().equals(employeeId))) {
             throw new EmployeeAlreadyAssignedException(projectId, employeeId);
@@ -76,6 +77,11 @@ public class ProjectService {
         ProjectEntity project = repository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
         repository.delete(project);
-        repository.delete(project);
+    }
+
+    private void verifyEmployee(Long employeeId) {
+        if (employeeId != null) {
+            employeeClient.verifyExists(employeeId);
+        }
     }
 }
