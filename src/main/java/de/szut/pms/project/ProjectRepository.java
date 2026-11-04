@@ -7,8 +7,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
+
+    @EntityGraph(attributePaths = "employees")
+    Optional<ProjectEntity> findProjectWithEmployeesByProjectId(Long projectId);
 
     @Query("""
             select case when count(project) > 0 then true else false end
