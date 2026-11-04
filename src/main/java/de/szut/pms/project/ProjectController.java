@@ -97,6 +97,11 @@ public class ProjectController {
         return ResponseEntity.ok(service.getEmployeeProjects(employeeId));
     }
 
+    @GetMapping("/{projectId}/employees")
+    public ResponseEntity<ProjectDto> getProjectEmployees(@PathVariable Long projectId) {
+        return ResponseEntity.ok(service.getById(projectId));
+    }
+
     @Operation(
             summary = "Mitarbeiter einem Projekt zuordnen",
             description = "Ordnet einen Mitarbeiter einem Projekt zu und antwortet mit HTTP 201 und der URI der Zuordnung."
