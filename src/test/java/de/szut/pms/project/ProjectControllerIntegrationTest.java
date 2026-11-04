@@ -2,16 +2,19 @@
 package de.szut.pms.project;
 
 import de.szut.pms.testcontainers.AbstractIntegrationTest;
+import de.szut.pms.employee.EmployeeClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -20,6 +23,9 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @MockitoBean
+    private EmployeeClient employeeClient;
 
     @BeforeEach
     void cleanProjects() {
@@ -138,6 +144,7 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.startDate").value("2026-11-01"))
                 .andExpect(jsonPath("$.endDate").value("2026-12-01"));
 
+        verify(employeeClient).verifyExists(1L);
         ProjectEntity created = projectRepository.findAll().get(0);
         mockMvc.perform(get("/project/{projectId}", created.getProjectId()))
                 .andExpect(status().isOk())
