@@ -94,6 +94,7 @@ public class ProjectService {
                     "Mitarbeiter " + employeeId + " ist Projekt " + projectId + " nicht zugeordnet.");
         }
         return mapper.toDto(project);
+    }
     @Transactional(readOnly = true)
     public List<ProjectDto> getEmployeeProjects(Long employeeId) {
         return repository.findAll().stream()
