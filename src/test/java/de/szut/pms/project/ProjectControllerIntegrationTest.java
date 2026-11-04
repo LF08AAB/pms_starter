@@ -84,6 +84,32 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$[?(@.name == 'Projekt B')]").exists());
     }
 
+    @Test
+    @WithMockUser
+    void getById_returnsStoredProject() throws Exception {
+        ProjectEntity project = createTestProject("Testprojekt", 1L, 2L);
+
+        mockMvc.perform(get("/project/{projectId}", project.getProjectId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.projectId").value(project.getProjectId()))
+                .andExpect(jsonPath("$.name").value("Testprojekt"))
+                .andExpect(jsonPath("$.requiredQualifications[0]").value("Java"));
+    }
+
+    @Test
+    @WithMockUser
+    void getById_returnsNotFound_whenProjectDoesNotExist() throws Exception {
+        mockMvc.perform(get("/project/{projectId}", Long.MAX_VALUE))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void getById_returnsUnauthorizedWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/project/{projectId}", 1L))
+                .andExpect(status().isUnauthorized());
+    }
+
     // T_04: Kein JWT / keine Authentifizierung
     @Test
     void getAllProjects_returnsUnauthorizedWithoutAuthentication() throws Exception {
