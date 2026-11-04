@@ -1,6 +1,9 @@
 package de.szut.pms.project;
 
 import de.szut.pms.employee.EmployeeClient;
+import de.szut.pms.employee.EmployeeNotFoundException;
+import de.szut.pms.employee.EmployeeServiceUnauthorizedException;
+import de.szut.pms.employee.EmployeeServiceUnavailableException;
 import de.szut.pms.testcontainers.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,8 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -130,6 +135,42 @@ class EmployeeProjectsIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(content().json("""
                         {"employeeId": 2, "projects": []}
                         """, JsonCompareMode.STRICT));
+        verify(employeeClient).verifyExists(2L);
+    }
+
+    @Test
+    @WithMockUser
+    void returnsNotFoundWithUnderstandableMessageForUnknownEmployee() throws Exception {
+        doThrow(new EmployeeNotFoundException(999999L)).when(employeeClient).verifyExists(999999L);
+
+        mockMvc.perform(get("/project/employees/{employeeId}", 999999L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Mitarbeiter nicht gefunden"))
+                .andExpect(jsonPath("$.detail").value("Es gibt keinen Mitarbeiter mit der Kennung 999999."));
+    }
+
+    @Test
+    @WithMockUser
+    void returnsServiceUnavailableInsteadOfEmptyProjectsWhenEmployeeServiceFails() throws Exception {
+        doThrow(new EmployeeServiceUnavailableException(new IllegalStateException("Service unavailable")))
+                .when(employeeClient).verifyExists(2L);
+
+        mockMvc.perform(get("/project/employees/{employeeId}", 2L))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.status").value(503))
+                .andExpect(jsonPath("$.detail").isNotEmpty());
+    }
+
+    @Test
+    @WithMockUser
+    void returnsUnauthorizedWhenEmployeeServiceRejectsToken() throws Exception {
+        doThrow(new EmployeeServiceUnauthorizedException()).when(employeeClient).verifyExists(2L);
+
+        mockMvc.perform(get("/project/employees/{employeeId}", 2L))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.detail").isNotEmpty());
     }
 
     @Test

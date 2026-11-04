@@ -99,6 +99,13 @@ erforderlich. Die Projektleitung allein ersetzt keine Mitarbeiterzuordnung.
 Ohne zugeordnete Projekte antwortet der Endpunkt mit HTTP 200 und
 `{"employeeId": 2, "projects": []}`, nicht mit HTTP 404.
 
+Vor der Datenbankabfrage wird die Mitarbeiter-ID ueber den konfigurierten
+Employee-Service geprueft. Der bestehende Client leitet den Bearer-Token weiter.
+Ein unbekannter Mitarbeiter fuehrt zu HTTP 404 mit einer verstaendlichen
+ProblemDetail-Antwort. Lehnt der Employee-Service den Token ab, folgt HTTP 401;
+bei Nichterreichbarkeit oder anderen Servicefehlern HTTP 503. Fehler werden
+nicht als leere Projektliste ausgegeben.
+
 Die Akzeptanzkriterien haben Vorrang vor den Task-Titeln mit dem Wort
 „aktiv“: Es gibt keinen Datumsfilter. Auch beendete und zukuenftige Projekte
 werden angezeigt, solange die Mitarbeiterzuordnung gespeichert ist. Projekte
@@ -109,7 +116,7 @@ Die Branches `feature/s09-t01` bis `feature/s09-t08` bauen in Task-Reihenfolge
 aufeinander auf. `feature/s09-t08` enthaelt die vollstaendige Story.
 
 Die gezielten Tests lassen sich mit
-`.\mvnw.cmd "-Dtest=EmployeeProjects*Test" test` ausfuehren. Die Integrationstests
+`.\mvnw.cmd "-Dtest=EmployeeProjects*Test,RestEmployeeClientTest" test` ausfuehren. Die Integrationstests
 benoetigen Docker und starten eine eigene PostgreSQL-Testdatenbank. Falls Docker
 die alte API-Version des vorhandenen Testcontainers-Clients mit HTTP 400 ablehnt,
 zusaetzlich `"-Dapi.version=1.44"` angeben.
