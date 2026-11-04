@@ -97,7 +97,6 @@ public class ProjectController {
         return ResponseEntity.ok(service.getEmployeeProjects(employeeId));
     }
 
-
     @Operation(
             summary = "Mitarbeiter einem Projekt zuordnen",
             description = "Ordnet einen Mitarbeiter einem Projekt zu und antwortet mit HTTP 201 und der URI der Zuordnung."
@@ -125,6 +124,7 @@ public class ProjectController {
             @PathVariable Long employeeId) {
         return ResponseEntity.ok(service.removeEmployee(projectId, employeeId));
     }
+
 
     @Operation(
             summary = "Projekt löschen",
