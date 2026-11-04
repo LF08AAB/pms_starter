@@ -205,7 +205,10 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
         mockMvc.perform(delete("/project/{projectId}/employees/{employeeId}",
                         project.getProjectId(), 42L))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Mitarbeiter nicht zugeordnet"))
+                .andExpect(jsonPath("$.detail").value(
+                        "Mitarbeiter 42 ist Projekt " + project.getProjectId() + " nicht zugeordnet."));
     }
 
     @Test
