@@ -18,10 +18,8 @@ public class RestEmployeeClient implements EmployeeClient {
 
     private final RestClient restClient;
 
-    public RestEmployeeClient(
-            RestClient.Builder restClientBuilder,
-            @Value("${employee-service.base-url}") String baseUrl) {
-        this.restClient = restClientBuilder.baseUrl(baseUrl).build();
+    public RestEmployeeClient(@Value("${employee-service.base-url}") String baseUrl) {
+        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
     }
 
     @Override
