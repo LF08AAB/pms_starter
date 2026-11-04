@@ -15,6 +15,7 @@ import de.szut.pms.hello.HelloNotFoundException;
 import de.szut.pms.employee.EmployeeNotFoundException;
 import de.szut.pms.employee.EmployeeServiceUnavailableException;
 import de.szut.pms.project.EmployeeAlreadyAssignedException;
+import de.szut.pms.project.EmployeeAssignmentConflictException;
 import de.szut.pms.project.EmployeeQualificationNotFoundException;
 import de.szut.pms.project.ProjectNotFoundException;
 
@@ -68,6 +69,14 @@ public class ApiExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Zuordnung bereits vorhanden");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeAssignmentConflictException.class)
+    public ProblemDetail handleAssignmentConflict(EmployeeAssignmentConflictException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Zeitliche Überschneidung");
         return problem;
     }
 

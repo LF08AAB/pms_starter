@@ -19,8 +19,10 @@ import java.util.Set;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,7 +41,16 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
 
     private ProjectEntity createTestProject(
             String name, Long employeeId, Long customerId) {
+        return createTestProject(
+                name,
+                employeeId,
+                customerId,
+                LocalDate.of(2026, 11, 1),
+                LocalDate.of(2026, 12, 1));
+    }
 
+    private ProjectEntity createTestProject(
+            String name, Long employeeId, Long customerId, LocalDate startDate, LocalDate endDate) {
         ProjectEntity project = new ProjectEntity();
         project.setName(name);
         project.setResponsibleEmployeeId(employeeId);
@@ -47,8 +58,8 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
         project.setContactPerson("Max Mustermann");
         project.setComment("Integrationstest");
         project.setRequiredQualifications(new HashSet<>(Set.of("Java")));
-        project.setStartDate(LocalDate.of(2026, 11, 1));
-        project.setEndDate(LocalDate.of(2026, 12, 1));
+        project.setStartDate(startDate);
+        project.setEndDate(endDate);
 
         return projectRepository.save(project);
     }
@@ -195,5 +206,82 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isBadRequest());
 
         verify(employeeClient, never()).findById(10L);
+    }
+
+    @Test
+    @WithMockUser
+    void assignEmployee_rejectsOverlappingProjectPeriod() throws Exception {
+        ProjectEntity firstProject = createTestProject("Projekt A", 1L, 2L);
+        ProjectEntity overlappingProject = createTestProject(
+                "Projekt B",
+                1L,
+                2L,
+                LocalDate.of(2026, 11, 15),
+                LocalDate.of(2026, 12, 15));
+        when(employeeClient.findById(10L))
+                .thenReturn(Optional.of(new EmployeeDetails(Set.of("Java"))));
+
+        mockMvc.perform(post("/project/{projectId}/employees/{employeeId}",
+                        firstProject.getProjectId(), 10L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"qualification":"Java"}
+                                """))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/project/{projectId}/employees/{employeeId}",
+                        overlappingProject.getProjectId(), 10L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"qualification":"Java"}
+                                """))
+                .andExpect(status().isConflict());
+
+        mockMvc.perform(get("/project"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(
+                        "$[?(@.name == 'Projekt A')].employees[0].employeeId")
+                        .value(hasItem(10)))
+                .andExpect(jsonPath(
+                        "$[?(@.name == 'Projekt B')].employees[0].employeeId")
+                        .doesNotExist());
+    }
+
+    @Test
+    @WithMockUser
+    void assignEmployee_allowsNonOverlappingProjectPeriod() throws Exception {
+        ProjectEntity firstProject = createTestProject("Projekt A", 1L, 2L);
+        ProjectEntity laterProject = createTestProject(
+                "Projekt B",
+                1L,
+                2L,
+                LocalDate.of(2026, 12, 2),
+                LocalDate.of(2026, 12, 15));
+        when(employeeClient.findById(10L))
+                .thenReturn(Optional.of(new EmployeeDetails(Set.of("Java"))));
+
+        mockMvc.perform(post("/project/{projectId}/employees/{employeeId}",
+                        firstProject.getProjectId(), 10L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"qualification":"Java"}
+                                """))
+                .andExpect(status().isCreated());
+        mockMvc.perform(post("/project/{projectId}/employees/{employeeId}",
+                        laterProject.getProjectId(), 10L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"qualification":"Java"}
+                                """))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/project"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(
+                        "$[?(@.name == 'Projekt A')].employees[0].employeeId")
+                        .value(hasItem(10)))
+                .andExpect(jsonPath(
+                        "$[?(@.name == 'Projekt B')].employees[0].employeeId")
+                        .value(hasItem(10)));
     }
 }
