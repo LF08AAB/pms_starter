@@ -69,6 +69,10 @@ POST http://localhost:8080/project/1/employees/2
   "qualification": "Java"
 }
 
+### Projekte eines Mitarbeiters abrufen (authentifiziert)
+GET http://localhost:8080/project/employees/2
+Authorization: Bearer {{bearer_token}}
+
 ### Projekt anlegen mit nicht existierender Mitarbeiter-ID (-> 404 Not Found, kein Projekt wird angelegt)
 POST http://localhost:8080/project
 Content-Type: application/json
