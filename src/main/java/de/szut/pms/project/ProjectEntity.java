@@ -38,5 +38,13 @@ public class ProjectEntity {
     private LocalDate endDate;
 
     public ProjectEntity(String name, Long aLong, Long aLong1, String s, String comment, Set<String> strings, LocalDate localDate, LocalDate localDate1) {
+        this.name = name;
+        this.responsibleEmployeeId = aLong;
+        this.customerId = aLong1;
+        this.contactPerson = s;
+        this.comment = comment;
+        this.requiredQualifications = strings == null ? new HashSet<>() : new HashSet<>(strings);
+        this.startDate = localDate;
+        this.endDate = localDate1;
     }
 }

@@ -38,7 +38,7 @@ public class ApiExceptionHandler {
     public ProblemDetail handleProjectNotFound(ProjectNotFoundException ex) {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-        problem.setTitle("Projekt nicht gefunden");
+        problem.setTitle("Nicht gefunden");
         return problem;
     }
 
