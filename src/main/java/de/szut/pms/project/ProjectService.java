@@ -3,8 +3,12 @@ package de.szut.pms.project;
 import de.szut.pms.customer.CustomerClient;
 import de.szut.pms.customer.CustomerNotFoundException;
 import de.szut.pms.employee.EmployeeClient;
+import de.szut.pms.employee.EmployeeDetails;
+import de.szut.pms.employee.EmployeeNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -14,7 +18,6 @@ public class ProjectService {
 
     private final ProjectRepository repository;
     private final ProjectMapper mapper;
-
     private final EmployeeClient employeeClient;
     private final CustomerClient customerClient;
 
@@ -60,6 +63,18 @@ public class ProjectService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public void validateEmployeeAssignment(Long projectId, Long employeeId, String qualification) {
+        repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        EmployeeDetails employee = employeeClient.findById(employeeId)
+                .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+        if (!employee.qualifications().contains(qualification)) {
+            throw new EmployeeQualificationNotFoundException(employeeId, qualification);
+        }
+    }
+
     @Transactional
     public void deleteProject(Long id) {
         ProjectEntity project = repository.findById(id)
@@ -75,6 +90,20 @@ public class ProjectService {
                 .map(mapper::toEmployeeProjectDto)
                 .toList();
         return new EmployeeProjectsDto(employeeId, projects);
+    }
+
+    @Transactional
+    public ProjectDto removeEmployee(Long projectId, Long employeeId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        boolean removed = project.getEmployees().removeIf(
+                employee -> employee.getEmployeeId().equals(employeeId));
+        if (!removed) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Mitarbeiter " + employeeId + " ist Projekt " + projectId + " nicht zugeordnet.");
+        }
+        return mapper.toDto(project);
     }
 
     private void verifyEmployee(Long employeeId) {
