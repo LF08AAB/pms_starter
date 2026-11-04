@@ -11,6 +11,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.util.Optional;
+
 @Component
 public class RestEmployeeClient implements EmployeeClient {
 
@@ -28,17 +30,46 @@ public class RestEmployeeClient implements EmployeeClient {
                     .headers(this::forwardToken)
                     .retrieve()
                     .toBodilessEntity();
-        } catch (HttpClientErrorException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                throw new EmployeeNotFoundException(employeeId);
-            }
-            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) {
+        } catch (HttpClientErrorException.NotFound ex) {
+            throw new EmployeeNotFoundException(employeeId);
+        } catch (HttpClientErrorException ex) {
+            if (isUnauthorized(ex)) {
                 throw new EmployeeServiceUnauthorizedException();
             }
-            throw new EmployeeServiceUnavailableException(e);
-        } catch (RestClientException e) {
-            throw new EmployeeServiceUnavailableException(e);
+            throw new EmployeeServiceUnavailableException(ex);
+        } catch (RestClientException ex) {
+            throw new EmployeeServiceUnavailableException(ex);
         }
+    }
+
+    @Override
+    public Optional<EmployeeDetails> findById(Long employeeId) {
+        try {
+            EmployeeDetails employee = restClient.get()
+                    .uri("/employees/{id}", employeeId)
+                    .headers(this::forwardToken)
+                    .retrieve()
+                    .body(EmployeeDetails.class);
+            if (employee == null) {
+                throw new EmployeeServiceUnavailableException(
+                        new IllegalStateException("Employee-Service returned an empty response."));
+            }
+            return Optional.of(employee);
+        } catch (HttpClientErrorException.NotFound ex) {
+            return Optional.empty();
+        } catch (HttpClientErrorException ex) {
+            if (isUnauthorized(ex)) {
+                throw new EmployeeServiceUnauthorizedException();
+            }
+            throw new EmployeeServiceUnavailableException(ex);
+        } catch (RestClientException ex) {
+            throw new EmployeeServiceUnavailableException(ex);
+        }
+    }
+
+    private boolean isUnauthorized(HttpClientErrorException ex) {
+        return ex.getStatusCode() == HttpStatus.UNAUTHORIZED
+                || ex.getStatusCode() == HttpStatus.FORBIDDEN;
     }
 
     private void forwardToken(HttpHeaders headers) {
