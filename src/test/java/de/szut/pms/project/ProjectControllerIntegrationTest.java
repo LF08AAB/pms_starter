@@ -2,15 +2,23 @@
 package de.szut.pms.project;
 
 import de.szut.pms.testcontainers.AbstractIntegrationTest;
+import de.szut.pms.employee.EmployeeClient;
+import de.szut.pms.employee.EmployeeDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -18,6 +26,9 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ProjectRepository projectRepository;
+
+    @MockitoBean
+    private EmployeeClient employeeClient;
 
     @BeforeEach
     void cleanProjects() {
@@ -38,6 +49,37 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
         project.setEndDate(LocalDate.of(2026, 12, 1));
 
         return projectRepository.save(project);
+    }
+
+    @Test
+    @WithMockUser
+    void assignEmployee_returnsCreatedAndPersistsAssignment() throws Exception {
+        ProjectEntity project = createTestProject("Testprojekt", 1L, 2L);
+        when(employeeClient.findById(3L))
+                .thenReturn(Optional.of(new EmployeeDetails(Set.of("Java"))));
+        String assignmentPath = "/project/" + project.getProjectId() + "/employees/3";
+
+        mockMvc.perform(post(assignmentPath)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"qualification": "Java"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "http://localhost" + assignmentPath))
+                .andExpect(content().string(""));
+
+        mockMvc.perform(get("/project/{projectId}", project.getProjectId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.employees.length()").value(1))
+                .andExpect(jsonPath("$.employees[0].employeeId").value(3))
+                .andExpect(jsonPath("$.employees[0].qualification").value("Java"));
+
+        mockMvc.perform(post(assignmentPath)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"qualification": "Java"}
+                                """))
+                .andExpect(status().isConflict());
     }
 
     // T_05: Keine Projekte vorhanden
@@ -82,6 +124,83 @@ class ProjectControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[?(@.name == 'Projekt A')]").exists())
                 .andExpect(jsonPath("$[?(@.name == 'Projekt B')]").exists());
+    }
+
+    @Test
+    @WithMockUser
+    void getById_returnsStoredProject() throws Exception {
+        ProjectEntity project = createTestProject("Testprojekt", 1L, 2L);
+        ProjectEmployeeEntity employee = new ProjectEmployeeEntity(3L, "Java");
+        employee.setProject(project);
+        project.getEmployees().add(employee);
+        projectRepository.save(project);
+
+        mockMvc.perform(get("/project/{projectId}", project.getProjectId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.projectId").value(project.getProjectId()))
+                .andExpect(jsonPath("$.name").value("Testprojekt"))
+                .andExpect(jsonPath("$.responsibleEmployeeId").value(1))
+                .andExpect(jsonPath("$.customerId").value(2))
+                .andExpect(jsonPath("$.contactPerson").value("Max Mustermann"))
+                .andExpect(jsonPath("$.comment").value("Integrationstest"))
+                .andExpect(jsonPath("$.requiredQualifications[0]").value("Java"))
+                .andExpect(jsonPath("$.startDate").value("2026-11-01"))
+                .andExpect(jsonPath("$.endDate").value("2026-12-01"))
+                .andExpect(jsonPath("$.employees.length()").value(1))
+                .andExpect(jsonPath("$.employees[0].employeeId").value(3))
+                .andExpect(jsonPath("$.employees[0].qualification").value("Java"));
+    }
+
+    @Test
+    @WithMockUser
+    void create_thenGetById_preservesProjectFields() throws Exception {
+        mockMvc.perform(post("/project")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Neues Projekt",
+                                  "responsibleEmployeeId": 1,
+                                  "customerId": 2,
+                                  "contactPerson": "Erika Mustermann",
+                                  "comment": "Projektziel",
+                                  "requiredQualifications": ["Java"],
+                                  "startDate": "2026-11-01",
+                                  "endDate": "2026-12-01"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Neues Projekt"))
+                .andExpect(jsonPath("$.responsibleEmployeeId").value(1))
+                .andExpect(jsonPath("$.customerId").value(2))
+                .andExpect(jsonPath("$.contactPerson").value("Erika Mustermann"))
+                .andExpect(jsonPath("$.comment").value("Projektziel"))
+                .andExpect(jsonPath("$.requiredQualifications[0]").value("Java"))
+                .andExpect(jsonPath("$.startDate").value("2026-11-01"))
+                .andExpect(jsonPath("$.endDate").value("2026-12-01"));
+
+        verify(employeeClient).verifyExists(1L);
+        ProjectEntity created = projectRepository.findAll().get(0);
+        mockMvc.perform(get("/project/{projectId}", created.getProjectId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Neues Projekt"))
+                .andExpect(jsonPath("$.contactPerson").value("Erika Mustermann"))
+                .andExpect(jsonPath("$.employees").isArray())
+                .andExpect(jsonPath("$.employees").isEmpty())
+                .andExpect(jsonPath("$.requiredQualifications[0]").value("Java"));
+    }
+
+    @Test
+    @WithMockUser
+    void getById_returnsNotFound_whenProjectDoesNotExist() throws Exception {
+        mockMvc.perform(get("/project/{projectId}", Long.MAX_VALUE))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void getById_returnsUnauthorizedWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/project/{projectId}", 1L))
+                .andExpect(status().isUnauthorized());
     }
 
     // T_04: Kein JWT / keine Authentifizierung
