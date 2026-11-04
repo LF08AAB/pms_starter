@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.List;
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/project")
@@ -33,6 +34,7 @@ public class ProjectController {
 
         return ResponseEntity.created(location).body(created);
     }
+
     @GetMapping("/{projectId}")
     public ResponseEntity<ProjectDto> getById(@PathVariable Long projectId) {
         ProjectDto project = service.getById(projectId);
