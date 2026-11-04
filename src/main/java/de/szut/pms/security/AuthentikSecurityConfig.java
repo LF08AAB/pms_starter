@@ -1,6 +1,7 @@
 package de.szut.pms.security;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,8 +52,12 @@ public class AuthentikSecurityConfig {
                         .requestMatchers("/employees/**").authenticated()
                         .requestMatchers("/hello").authenticated()
                         .requestMatchers("/hello/**").authenticated()
-                        .requestMatchers("/project").authenticated()
-                        .requestMatchers("/project/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/project").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/project/*").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/project").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/project/*").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/project/*").authenticated()
+                        .requestMatchers("/project", "/project/**").authenticated()
                         .anyRequest().permitAll()
                 );
 
