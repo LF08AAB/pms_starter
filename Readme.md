@@ -105,6 +105,15 @@ werden angezeigt, solange die Mitarbeiterzuordnung gespeichert ist. Projekte
 werden beim Loeschen samt Zuordnungen physisch entfernt und erscheinen danach
 nicht mehr in der Liste. Die Ausgabe ist nach Projekt-ID aufsteigend sortiert.
 
+Die Branches `feature/s09-t01` bis `feature/s09-t08` bauen in Task-Reihenfolge
+aufeinander auf. `feature/s09-t08` enthaelt die vollstaendige Story.
+
+Die gezielten Tests lassen sich mit
+`.\mvnw.cmd "-Dtest=EmployeeProjects*Test" test` ausfuehren. Die Integrationstests
+benoetigen Docker und starten eine eigene PostgreSQL-Testdatenbank. Falls Docker
+die alte API-Version des vorhandenen Testcontainers-Clients mit HTTP 400 ablehnt,
+zusaetzlich `"-Dapi.version=1.44"` angeben.
+
 # Kunden-Service
 
 Der Kunden-Service existiert noch nicht — er wird parallel von einem anderen Team gebaut. Das
