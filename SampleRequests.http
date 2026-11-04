@@ -1,5 +1,5 @@
 ### Zuerst in GetBearerToken.http einen Token holen und hier eintragen
-@bearer_token=HIER_TOKEN_EINTRAGEN
+@bearer_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjhiYjBjODA4ZWYxZGUwY2M2YWQ5ZjU2YmEyZWRhM2Q2IiwidHlwIjoiSldUIn0.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjkwMDAvYXBwbGljYXRpb24vby9lbXBsb3llZV9hcGkvIiwic3ViIjoiNWNiOGVmZWJjOWUxODMyNDEyMDAyNzFmMTRlN2M4ZDdkNWY3NmIxNDJjZTRkYzNmMTJjNWJiODFmOTJjYzI1YyIsImF1ZCI6ImVtcGxveWVlX2FwaV9jbGllbnQiLCJleHAiOjE3OTM2NDU0NDIsImlhdCI6MTc5MzY0MjQ0MiwiYXV0aF90aW1lIjoxNzkzNjQyNDQyLCJhY3IiOiJnb2F1dGhlbnRpay5pby9wcm92aWRlcnMvb2F1dGgyL2RlZmF1bHQiLCJhenAiOiJlbXBsb3llZV9hcGlfY2xpZW50IiwidWlkIjoia3RzaTJGNkFLY1hHMW1IV1RXbWJFOFIyRHdkazdHQnJrOWtzMEo3RSJ9.W7ebzlHkX9xllVZP7AMyfRs6V3ra5N79ECZ2VdR5tS2gaxWTlV0Glvsk-jgT9mpDwLaDYfyvTbhmrkQqI90O_D8m2ZQ8kOa5LISFoo-bjiuKqqFRzbvjABZSnVGAcJz2hXwYV3t6JXjEeRh9oUC0KMkN-vjaRGwGfdq1wG8vm7WyA-s5YGGz0zJ6LqRJRbvqiwe4YvpimnD54fN5keI2cpzDUtrbLfoEzmtis-nVG7t1bjXSbGBts0oGNQkCWECD_YtTygopprc1E_ajigTBWOzqtd7hvjZkWM3RPmu13qFa7WEagd-HNLZIgxNQqA366LaJ1F58_YUc9Ue9Z_WCjz145cLYLK10hIyG_XsLmmApm6P6TtOeyCAvKH5GDfIP57NZBxyg6SNZlK2Wz_2yYbxWCvWAK3w10qW3kbU7luGBHILvJKRC8Cg5FJ3RDRtH8fUiD3kdYBMe00U0SbA3SQ-wf79RxuCdh6Kk3crXt4bJcIddUke1PpCoQP9V6Bld08ngFgCLIh6hc7eaFdFq0cXLvT0Qwv6l-ZgjRoEPk6UiR3rtxEb-8cGc6jm6xwJh7ucBa8BTJcl5ZIUdXLNubdLyvInXkh9qe7raVAR776sUkX9764OxR1O2rncLKfdrasKtYQg_2sLwb3XnuK0VXKrhrUvrVw2eFMFcqGhRSkQ
 
 ### Alle Einträge abrufen
 GET http://localhost:8080/hello
@@ -60,4 +60,36 @@ Authorization: Bearer ungueltiger.token
 
 {
   "name": "Projekt mit falschem Token"
+}
+
+### Projekt anlegen mit nicht existierender Mitarbeiter-ID (-> 404 Not Found, kein Projekt wird angelegt)
+POST http://localhost:8080/project
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "name": "Projekt mit unbekanntem Mitarbeiter",
+  "responsibleEmployeeId": 999999,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Mitarbeiter-ID existiert nicht im Employee-Service",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
+}
+
+### Projekt aktualisieren mit nicht existierender Mitarbeiter-ID (-> 404 Not Found)
+PUT http://localhost:8080/project/1
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "name": "Projekt mit unbekanntem Mitarbeiter",
+  "responsibleEmployeeId": 999999,
+  "customerId": 1,
+  "contactPerson": "Max Mustermann",
+  "comment": "Mitarbeiter-ID existiert nicht im Employee-Service",
+  "requiredQualifications": ["Java"],
+  "startDate": "2026-11-01",
+  "endDate": "2027-03-31"
 }
