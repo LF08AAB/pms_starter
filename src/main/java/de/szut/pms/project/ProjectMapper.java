@@ -19,8 +19,9 @@ public class ProjectMapper {
         entity.getStartDate(),
         entity.getEndDate(),
         entity.getEmployees().stream()
-                .map(employee -> new AssignedEmployeeDto(
-                        employee.getEmployeeId(), employee.getQualification()))
+                .map(employee -> new ProjectEmployeeDto(
+                        employee.getEmployeeId(),
+                        employee.getQualification()))
                 .toList());
     }
 
