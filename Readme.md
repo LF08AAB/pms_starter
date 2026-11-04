@@ -99,6 +99,12 @@ erforderlich. Die Projektleitung allein ersetzt keine Mitarbeiterzuordnung.
 Ohne zugeordnete Projekte antwortet der Endpunkt mit HTTP 200 und
 `{"employeeId": 2, "projects": []}`, nicht mit HTTP 404.
 
+Die Akzeptanzkriterien haben Vorrang vor den Task-Titeln mit dem Wort
+„aktiv“: Es gibt keinen Datumsfilter. Auch beendete und zukuenftige Projekte
+werden angezeigt, solange die Mitarbeiterzuordnung gespeichert ist. Projekte
+werden beim Loeschen samt Zuordnungen physisch entfernt und erscheinen danach
+nicht mehr in der Liste. Die Ausgabe ist nach Projekt-ID aufsteigend sortiert.
+
 # Kunden-Service
 
 Der Kunden-Service existiert noch nicht — er wird parallel von einem anderen Team gebaut. Das
