@@ -54,4 +54,3 @@ public class ProjectService {
         repository.delete(project);
     }
 }
-}
