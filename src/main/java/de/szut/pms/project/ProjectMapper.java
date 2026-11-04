@@ -17,7 +17,12 @@ public class ProjectMapper {
         // klären, ob benötigte Qualifikationen als Namen oder Skill-IDs gespeichert werden sollen
         new HashSet<>(entity.getRequiredQualifications()),
         entity.getStartDate(),
-        entity.getEndDate());
+        entity.getEndDate(),
+        entity.getEmployees().stream()
+                .map(employee -> new ProjectEmployeeDto(
+                        employee.getEmployeeId(),
+                        employee.getQualification()))
+                .toList());
     }
 
     public ProjectEntity toEntity(CreateProjectDto dto) {
